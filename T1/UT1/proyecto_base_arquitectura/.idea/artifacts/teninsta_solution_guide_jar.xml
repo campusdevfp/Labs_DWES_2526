@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="teninsta_solution_guide:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/teninsta_solution_guide_jar</output-path>
+    <root id="archive" name="teninsta_solution_guide.jar">
+      <element id="module-output" name="teninsta_solution_guide" />
+    </root>
+  </artifact>
+</component>

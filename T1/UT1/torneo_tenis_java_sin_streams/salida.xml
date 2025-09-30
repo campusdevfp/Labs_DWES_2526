@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tenistas>
+  <tenista>
+    <id>2</id>
+    <nombre>Novak Djokovic</nombre>
+    <pais>Serbia</pais>
+    <altura>188</altura>
+    <peso>80</peso>
+    <puntos>12000</puntos>
+    <mano>DIESTRO</mano>
+    <fecha_nacimiento>1987-05-22</fecha_nacimiento>
+    <created_at>2025-09-29T18:53:54.463243</created_at>
+    <updated_at>2025-09-29T18:53:54.463243</updated_at>
+  </tenista>
+  <tenista>
+    <id>4</id>
+    <nombre>Roger Federer</nombre>
+    <pais>Suiza</pais>
+    <altura>185</altura>
+    <peso>81</peso>
+    <puntos>11000</puntos>
+    <mano>DIESTRO</mano>
+    <fecha_nacimiento>1981-08-08</fecha_nacimiento>
+    <created_at>2025-09-29T18:53:54.470990800</created_at>
+    <updated_at>2025-09-29T18:53:54.470990800</updated_at>
+  </tenista>
+  <tenista>
+    <id>1</id>
+    <nombre>Rafael Nadal</nombre>
+    <pais>España</pais>
+    <altura>185</altura>
+    <peso>85</peso>
+    <puntos>9500</puntos>
+    <mano>DIESTRO</mano>
+    <fecha_nacimiento>1986-06-03</fecha_nacimiento>
+    <created_at>2025-09-29T18:53:54.438705900</created_at>
+    <updated_at>2025-09-29T18:53:54.438705900</updated_at>
+  </tenista>
+  <tenista>
+    <id>3</id>
+    <nombre>Carlos Alcaraz</nombre>
+    <pais>España</pais>
+    <altura>183</altura>
+    <peso>74</peso>
+    <puntos>8700</puntos>
+    <mano>DIESTRO</mano>
+    <fecha_nacimiento>2003-05-05</fecha_nacimiento>
+    <created_at>2025-09-29T18:53:54.463243</created_at>
+    <updated_at>2025-09-29T18:53:54.463243</updated_at>
+  </tenista>
+  <tenista>
+    <id>6</id>
+    <nombre>Andy Murray</nombre>
+    <pais>Reino Unido</pais>
+    <altura>190</altura>
+    <peso>84</peso>
+    <puntos>8000</puntos>
+    <mano>DIESTRO</mano>
+    <fecha_nacimiento>1987-05-15</fecha_nacimiento>
+    <created_at>2025-09-29T18:53:54.470990800</created_at>
+    <updated_at>2025-09-29T18:53:54.470990800</updated_at>
+  </tenista>
+  <tenista>
+    <id>5</id>
+    <nombre>Dominic Thiem</nombre>
+    <pais>Austria</pais>
+    <altura>185</altura>
+    <peso>79</peso>
+    <puntos>7200</puntos>
+    <mano>ZURDO</mano>
+    <fecha_nacimiento>1993-09-03</fecha_nacimiento>
+    <created_at>2025-09-29T18:53:54.470990800</created_at>
+    <updated_at>2025-09-29T18:53:54.470990800</updated_at>
+  </tenista>
+</tenistas>

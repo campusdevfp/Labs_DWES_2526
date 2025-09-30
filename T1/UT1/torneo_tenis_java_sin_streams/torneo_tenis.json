@@ -1,0 +1,67 @@
+[ {
+  "id" : 2,
+  "nombre" : "Novak Djokovic",
+  "pais" : "Serbia",
+  "altura" : 188,
+  "peso" : 80,
+  "puntos" : 12000,
+  "mano" : "DIESTRO",
+  "fechaNacimiento" : "1987-05-22",
+  "createdAt" : "2025-09-29T18:54:15.2221627",
+  "updatedAt" : "2025-09-29T18:54:15.2221627"
+}, {
+  "id" : 4,
+  "nombre" : "Roger Federer",
+  "pais" : "Suiza",
+  "altura" : 185,
+  "peso" : 81,
+  "puntos" : 11000,
+  "mano" : "DIESTRO",
+  "fechaNacimiento" : "1981-08-08",
+  "createdAt" : "2025-09-29T18:54:15.2328697",
+  "updatedAt" : "2025-09-29T18:54:15.2328697"
+}, {
+  "id" : 1,
+  "nombre" : "Rafael Nadal",
+  "pais" : "España",
+  "altura" : 185,
+  "peso" : 85,
+  "puntos" : 9500,
+  "mano" : "DIESTRO",
+  "fechaNacimiento" : "1986-06-03",
+  "createdAt" : "2025-09-29T18:54:15.2057093",
+  "updatedAt" : "2025-09-29T18:54:15.2057093"
+}, {
+  "id" : 3,
+  "nombre" : "Carlos Alcaraz",
+  "pais" : "España",
+  "altura" : 183,
+  "peso" : 74,
+  "puntos" : 8700,
+  "mano" : "DIESTRO",
+  "fechaNacimiento" : "2003-05-05",
+  "createdAt" : "2025-09-29T18:54:15.2328697",
+  "updatedAt" : "2025-09-29T18:54:15.2328697"
+}, {
+  "id" : 6,
+  "nombre" : "Andy Murray",
+  "pais" : "Reino Unido",
+  "altura" : 190,
+  "peso" : 84,
+  "puntos" : 8000,
+  "mano" : "DIESTRO",
+  "fechaNacimiento" : "1987-05-15",
+  "createdAt" : "2025-09-29T18:54:15.2385482",
+  "updatedAt" : "2025-09-29T18:54:15.2385482"
+}, {
+  "id" : 5,
+  "nombre" : "Dominic Thiem",
+  "pais" : "Austria",
+  "altura" : 185,
+  "peso" : 79,
+  "puntos" : 7200,
+  "mano" : "ZURDO",
+  "fechaNacimiento" : "1993-09-03",
+  "createdAt" : "2025-09-29T18:54:15.2385482",
+  "updatedAt" : "2025-09-29T18:54:15.2385482"
+} ]
