@@ -1,5 +1,3 @@
-Perfecto 👌. Vamos a desmenuzar **la sección `<build>` de tu `pom.xml`**, que es donde Maven controla **cómo compilar, empaquetar y hacer ejecutable el proyecto**.
-
 ---
 
 # 📂 Sección `<build>` de tu POM
