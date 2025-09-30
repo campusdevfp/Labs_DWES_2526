@@ -1,5 +1,3 @@
----
-
 # 📂 Sección `<build>` de tu POM
 
 ```xml
