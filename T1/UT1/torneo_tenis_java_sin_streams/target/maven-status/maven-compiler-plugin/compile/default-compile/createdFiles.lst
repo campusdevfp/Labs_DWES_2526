@@ -1,0 +1,11 @@
+app\domain\Mano.class
+app\config\Config.class
+app\util\CsvReader.class
+app\repository\TenistaRepository.class
+app\domain\Tenista.class
+app\util\FifoCache.class
+app\Main.class
+app\service\TenistaService.class
+app\repository\sqlite\TenistaRepositorySqlite.class
+app\util\OutputWriter.class
+app\config\LogConfig.class
