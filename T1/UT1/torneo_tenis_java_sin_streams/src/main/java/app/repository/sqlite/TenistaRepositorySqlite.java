@@ -75,6 +75,7 @@ public class TenistaRepositorySqlite implements TenistaRepository {
                 list.add(map(rs));
             }
         }
+
         return list;
     }
 

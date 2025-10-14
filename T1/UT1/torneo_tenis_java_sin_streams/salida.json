@@ -7,8 +7,8 @@
   "puntos" : 12000,
   "mano" : "DIESTRO",
   "fechaNacimiento" : "1987-05-22",
-  "createdAt" : "2025-09-29T20:07:27.820695",
-  "updatedAt" : "2025-09-29T20:07:27.820695"
+  "createdAt" : "2025-10-07T10:49:02.7734346",
+  "updatedAt" : "2025-10-07T10:49:02.7734346"
 }, {
   "id" : 4,
   "nombre" : "Roger Federer",
@@ -18,8 +18,8 @@
   "puntos" : 11000,
   "mano" : "DIESTRO",
   "fechaNacimiento" : "1981-08-08",
-  "createdAt" : "2025-09-29T20:07:27.8288251",
-  "updatedAt" : "2025-09-29T20:07:27.8288251"
+  "createdAt" : "2025-10-07T10:49:02.7874355",
+  "updatedAt" : "2025-10-07T10:49:02.7874355"
 }, {
   "id" : 1,
   "nombre" : "Rafael Nadal",
@@ -29,8 +29,8 @@
   "puntos" : 9500,
   "mano" : "DIESTRO",
   "fechaNacimiento" : "1986-06-03",
-  "createdAt" : "2025-09-29T20:07:27.8056946",
-  "updatedAt" : "2025-09-29T20:07:27.8056946"
+  "createdAt" : "2025-10-07T10:49:02.7534355",
+  "updatedAt" : "2025-10-07T10:49:02.7534355"
 }, {
   "id" : 3,
   "nombre" : "Carlos Alcaraz",
@@ -40,8 +40,8 @@
   "puntos" : 8700,
   "mano" : "DIESTRO",
   "fechaNacimiento" : "2003-05-05",
-  "createdAt" : "2025-09-29T20:07:27.8248259",
-  "updatedAt" : "2025-09-29T20:07:27.8248259"
+  "createdAt" : "2025-10-07T10:49:02.7804344",
+  "updatedAt" : "2025-10-07T10:49:02.7804344"
 }, {
   "id" : 6,
   "nombre" : "Andy Murray",
@@ -51,8 +51,8 @@
   "puntos" : 8000,
   "mano" : "DIESTRO",
   "fechaNacimiento" : "1987-05-15",
-  "createdAt" : "2025-09-29T20:07:27.8369464",
-  "updatedAt" : "2025-09-29T20:07:27.8369464"
+  "createdAt" : "2025-10-07T10:49:02.7994338",
+  "updatedAt" : "2025-10-07T10:49:02.7994338"
 }, {
   "id" : 5,
   "nombre" : "Dominic Thiem",
@@ -62,6 +62,6 @@
   "puntos" : 7200,
   "mano" : "ZURDO",
   "fechaNacimiento" : "1993-09-03",
-  "createdAt" : "2025-09-29T20:07:27.8319442",
-  "updatedAt" : "2025-09-29T20:07:27.8319442"
+  "createdAt" : "2025-10-07T10:49:02.793433",
+  "updatedAt" : "2025-10-07T10:49:02.793433"
 } ]
