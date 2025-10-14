@@ -7,8 +7,13 @@
   "puntos" : 12000,
   "mano" : "DIESTRO",
   "fechaNacimiento" : "1987-05-22",
+<<<<<<< HEAD
   "createdAt" : "2025-10-07T10:49:02.7734346",
   "updatedAt" : "2025-10-07T10:49:02.7734346"
+=======
+  "createdAt" : "2025-10-07T08:11:31.7218308",
+  "updatedAt" : "2025-10-07T08:11:31.7218308"
+>>>>>>> d4510e2d650e6cafbb4f8f4a5d5a7d385228131a
 }, {
   "id" : 4,
   "nombre" : "Roger Federer",
@@ -18,8 +23,13 @@
   "puntos" : 11000,
   "mano" : "DIESTRO",
   "fechaNacimiento" : "1981-08-08",
+<<<<<<< HEAD
   "createdAt" : "2025-10-07T10:49:02.7874355",
   "updatedAt" : "2025-10-07T10:49:02.7874355"
+=======
+  "createdAt" : "2025-10-07T08:11:34.6868404",
+  "updatedAt" : "2025-10-07T08:11:34.6868404"
+>>>>>>> d4510e2d650e6cafbb4f8f4a5d5a7d385228131a
 }, {
   "id" : 1,
   "nombre" : "Rafael Nadal",
@@ -29,8 +39,13 @@
   "puntos" : 9500,
   "mano" : "DIESTRO",
   "fechaNacimiento" : "1986-06-03",
+<<<<<<< HEAD
   "createdAt" : "2025-10-07T10:49:02.7534355",
   "updatedAt" : "2025-10-07T10:49:02.7534355"
+=======
+  "createdAt" : "2025-10-07T08:10:56.0767423",
+  "updatedAt" : "2025-10-07T08:10:56.0767423"
+>>>>>>> d4510e2d650e6cafbb4f8f4a5d5a7d385228131a
 }, {
   "id" : 3,
   "nombre" : "Carlos Alcaraz",
@@ -40,8 +55,13 @@
   "puntos" : 8700,
   "mano" : "DIESTRO",
   "fechaNacimiento" : "2003-05-05",
+<<<<<<< HEAD
   "createdAt" : "2025-10-07T10:49:02.7804344",
   "updatedAt" : "2025-10-07T10:49:02.7804344"
+=======
+  "createdAt" : "2025-10-07T08:11:33.7294221",
+  "updatedAt" : "2025-10-07T08:11:33.7294221"
+>>>>>>> d4510e2d650e6cafbb4f8f4a5d5a7d385228131a
 }, {
   "id" : 6,
   "nombre" : "Andy Murray",
@@ -51,8 +71,13 @@
   "puntos" : 8000,
   "mano" : "DIESTRO",
   "fechaNacimiento" : "1987-05-15",
+<<<<<<< HEAD
   "createdAt" : "2025-10-07T10:49:02.7994338",
   "updatedAt" : "2025-10-07T10:49:02.7994338"
+=======
+  "createdAt" : "2025-10-07T08:11:36.4343744",
+  "updatedAt" : "2025-10-07T08:11:36.4343744"
+>>>>>>> d4510e2d650e6cafbb4f8f4a5d5a7d385228131a
 }, {
   "id" : 5,
   "nombre" : "Dominic Thiem",
@@ -62,6 +87,11 @@
   "puntos" : 7200,
   "mano" : "ZURDO",
   "fechaNacimiento" : "1993-09-03",
+<<<<<<< HEAD
   "createdAt" : "2025-10-07T10:49:02.793433",
   "updatedAt" : "2025-10-07T10:49:02.793433"
+=======
+  "createdAt" : "2025-10-07T08:11:35.5296603",
+  "updatedAt" : "2025-10-07T08:11:35.5296603"
+>>>>>>> d4510e2d650e6cafbb4f8f4a5d5a7d385228131a
 } ]

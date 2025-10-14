@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 C:\Users\Administrador\ws\Labs_DWES_2526\T1\UT1\torneo_tenis_java_sin_streams\src\main\java\app\Main.java
 C:\Users\Administrador\ws\Labs_DWES_2526\T1\UT1\torneo_tenis_java_sin_streams\src\main\java\app\domain\Mano.java
 C:\Users\Administrador\ws\Labs_DWES_2526\T1\UT1\torneo_tenis_java_sin_streams\src\main\java\app\config\Config.java
@@ -9,3 +10,16 @@ C:\Users\Administrador\ws\Labs_DWES_2526\T1\UT1\torneo_tenis_java_sin_streams\sr
 C:\Users\Administrador\ws\Labs_DWES_2526\T1\UT1\torneo_tenis_java_sin_streams\src\main\java\app\util\OutputWriter.java
 C:\Users\Administrador\ws\Labs_DWES_2526\T1\UT1\torneo_tenis_java_sin_streams\src\main\java\app\config\LogConfig.java
 C:\Users\Administrador\ws\Labs_DWES_2526\T1\UT1\torneo_tenis_java_sin_streams\src\main\java\app\repository\sqlite\TenistaRepositorySqlite.java
+=======
+C:\Users\madrid\ws\Labs_DWES_2526\T1\UT1\torneo_tenis_java_sin_streams\src\main\java\app\config\LogConfig.java
+C:\Users\madrid\ws\Labs_DWES_2526\T1\UT1\torneo_tenis_java_sin_streams\src\main\java\app\repository\TenistaRepository.java
+C:\Users\madrid\ws\Labs_DWES_2526\T1\UT1\torneo_tenis_java_sin_streams\src\main\java\app\util\OutputWriter.java
+C:\Users\madrid\ws\Labs_DWES_2526\T1\UT1\torneo_tenis_java_sin_streams\src\main\java\app\domain\Tenista.java
+C:\Users\madrid\ws\Labs_DWES_2526\T1\UT1\torneo_tenis_java_sin_streams\src\main\java\app\util\CsvReader.java
+C:\Users\madrid\ws\Labs_DWES_2526\T1\UT1\torneo_tenis_java_sin_streams\src\main\java\app\config\Config.java
+C:\Users\madrid\ws\Labs_DWES_2526\T1\UT1\torneo_tenis_java_sin_streams\src\main\java\app\service\TenistaService.java
+C:\Users\madrid\ws\Labs_DWES_2526\T1\UT1\torneo_tenis_java_sin_streams\src\main\java\app\util\FifoCache.java
+C:\Users\madrid\ws\Labs_DWES_2526\T1\UT1\torneo_tenis_java_sin_streams\src\main\java\app\repository\sqlite\TenistaRepositorySqlite.java
+C:\Users\madrid\ws\Labs_DWES_2526\T1\UT1\torneo_tenis_java_sin_streams\src\main\java\app\Main.java
+C:\Users\madrid\ws\Labs_DWES_2526\T1\UT1\torneo_tenis_java_sin_streams\src\main\java\app\domain\Mano.java
+>>>>>>> d4510e2d650e6cafbb4f8f4a5d5a7d385228131a

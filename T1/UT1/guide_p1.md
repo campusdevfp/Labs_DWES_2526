@@ -375,10 +375,6 @@ El CSV de entrada/salida se maneja con **Java estándar (I/O y `String.split`)**
 
 ---
 
-Muy buena cuestión 👌. Te explico **la estructura del proyecto `torneo_tenis`**, por qué está diseñada así y cómo se relaciona con **principios de arquitectura de software** que verías en un curso profesional.
-
----
-
 # 📂 Estructura del proyecto
 
 ```
@@ -497,10 +493,6 @@ Esto refleja el patrón **Repository** típico en DDD.
 - Está inspirada en **arquitectura hexagonal** y **en capas**.
 - Cumple con principios **SOLID** para que el código sea extensible y mantenible.
 - Así los alumnos ven en un proyecto sencillo cómo se aplican **patrones de arquitectura de software profesional**.
-
----
-
-Perfecto 👌. Te explico con detalle **qué hace `TenistaRepositorySqlite.java`**, cómo está organizado y cómo encaja en la arquitectura.
 
 ---
 

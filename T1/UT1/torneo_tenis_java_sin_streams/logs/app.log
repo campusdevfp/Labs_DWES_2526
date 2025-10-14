@@ -1,6 +1,45 @@
+<<<<<<< HEAD
 oct 07, 2025 10:49:02 A. M. app.Main main
 INFO: Iniciando aplicación
 oct 07, 2025 10:49:02 A. M. app.Main main
 INFO: Leídos 6 tenistas del CSV
 oct 07, 2025 10:49:03 A. M. app.Main main
 INFO: Finalizado correctamente 2025-10-07T10:49:03.061429900
+=======
+oct 07, 2025 7:59:30 A. M. app.Main main
+INFORMACIÓN: Iniciando aplicación
+oct 07, 2025 7:59:30 A. M. app.Main main
+INFORMACIÓN: Leídos 6 tenistas del CSV
+oct 07, 2025 7:59:31 A. M. app.Main main
+INFORMACIÓN: Finalizado correctamente 2025-10-07T07:59:31.104923200
+oct 07, 2025 8:05:22 A. M. app.Main main
+INFORMACIÓN: Iniciando aplicación
+oct 07, 2025 8:05:22 A. M. app.Main main
+INFORMACIÓN: Leídos 6 tenistas del CSV
+oct 07, 2025 8:05:23 A. M. app.Main main
+INFORMACIÓN: Finalizado correctamente 2025-10-07T08:05:23.034838400
+oct 07, 2025 8:05:42 A. M. app.Main main
+INFORMACIÓN: Iniciando aplicación
+oct 07, 2025 8:05:42 A. M. app.Main main
+INFORMACIÓN: Leídos 6 tenistas del CSV
+oct 07, 2025 8:07:51 A. M. app.Main main
+INFORMACIÓN: Iniciando aplicación
+oct 07, 2025 8:07:51 A. M. app.Main main
+INFORMACIÓN: Leídos 6 tenistas del CSV
+oct 07, 2025 8:09:36 A. M. app.Main main
+INFORMACIÓN: Finalizado correctamente 2025-10-07T08:09:36.585185
+oct 07, 2025 8:10:42 A. M. app.Main main
+INFORMACIÓN: Iniciando aplicación
+oct 07, 2025 8:10:43 A. M. app.Main main
+INFORMACIÓN: Leídos 6 tenistas del CSV
+oct 07, 2025 8:10:55 A. M. app.Main main
+INFORMACIÓN: Iniciando aplicación
+oct 07, 2025 8:10:56 A. M. app.Main main
+INFORMACIÓN: Leídos 6 tenistas del CSV
+oct 07, 2025 8:11:37 A. M. app.Main main
+INFORMACIÓN: Finalizado correctamente 2025-10-07T08:11:37.580236300
+oct 07, 2025 8:11:42 A. M. app.Main main
+INFORMACIÓN: Iniciando aplicación
+oct 07, 2025 8:11:42 A. M. app.Main main
+INFORMACIÓN: Leídos 6 tenistas del CSV
+>>>>>>> d4510e2d650e6cafbb4f8f4a5d5a7d385228131a

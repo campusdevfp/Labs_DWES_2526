@@ -1,0 +1,17 @@
+[
+  {
+    "nombre": "Pikachu",
+    "tipo": "Eléctrico",
+    "nivel": 10
+  },
+  {
+    "nombre": "Charmander",
+    "tipo": "Fuego",
+    "nivel": 12
+  },
+  {
+    "nombre": "Bulbasaur",
+    "tipo": "Planta",
+    "nivel": 11
+  }
+]
