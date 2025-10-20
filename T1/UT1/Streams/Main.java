@@ -72,6 +72,15 @@ public class Main {
                 .collect(groupingBy(Persona::getEdad,
                     collectingAndThen(minBy(Comparator.comparing(Persona::getEdad)), Optional::get))));
 
+            /*
+             * personas.stream() — Crea un stream de la lista de personas.
+                .filter(p -> p.getEdad() % 2 == 0) — Filtra solo las personas cuya edad es par.
+                .collect(groupingBy(...)) — Agrupa las personas por edad (la clave del mapa será la edad).
+                Para cada grupo (cada edad par), aplica:
+                minBy(Comparator.comparing(Persona::getEdad)) — Busca la persona más joven en ese grupo (aunque todas tienen la misma edad, así que será el único elemento).
+                collectingAndThen(..., Optional::get) — Extrae el valor de Optional (la persona encontrada).
+             */
+
         System.out.println("15️⃣ Mapa nombre→edad: " +
             personas.stream().collect(toMap(Persona::getNombre, Persona::getEdad, (a, b) -> a)));
 
