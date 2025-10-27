@@ -1,0 +1,62 @@
+{
+  "info": {
+    "name": "Productos REST API (v0)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Listar productos",
+      "request": { "method": "GET", "url": "{{baseUrl}}/api/productos" }
+    },
+    {
+      "name": "Obtener producto por ID",
+      "request": { "method": "GET", "url": "{{baseUrl}}/api/productos/1" }
+    },
+    {
+      "name": "Crear producto",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Teclado mecánico\",\n  \"categoria\": \"Periféricos\",\n  \"precio\": 59.99,\n  \"disponible\": true\n}"
+        },
+        "url": "{{baseUrl}}/api/productos"
+      }
+    },
+    {
+      "name": "Actualizar producto (PUT)",
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Teclado RGB\",\n  \"categoria\": \"Periféricos\",\n  \"precio\": 79.99,\n  \"disponible\": true\n}"
+        },
+        "url": "{{baseUrl}}/api/productos/1"
+      }
+    },
+    {
+      "name": "Actualizar parcialmente (PATCH)",
+      "request": {
+        "method": "PATCH",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"precio\": 69.99\n}"
+        },
+        "url": "{{baseUrl}}/api/productos/1"
+      }
+    },
+    {
+      "name": "Eliminar producto",
+      "request": {
+        "method": "DELETE",
+        "url": "{{baseUrl}}/api/productos/1"
+      }
+    }
+  ],
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080" }
+  ]
+}
