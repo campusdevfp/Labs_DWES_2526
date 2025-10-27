@@ -26,6 +26,7 @@ public class ProductosRestController {
     public ResponseEntity<List<Producto>> getAllProductos() {
         return ResponseEntity.ok(productosService.listar());
 //        return ResponseEntity.status(201).header("Pep-Info" , "Todo Ok").body(productosService.listar());
+
     }
 
     @GetMapping("/{id}")
