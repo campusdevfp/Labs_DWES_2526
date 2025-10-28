@@ -29,6 +29,8 @@ public class ProductosRestController {
 
     }
 
+    
+
     @GetMapping("/{id}")
     public ResponseEntity<Producto> getProductoById(@PathVariable Long id) {
         Optional<Producto> producto = productosService.buscarPorId(id);
