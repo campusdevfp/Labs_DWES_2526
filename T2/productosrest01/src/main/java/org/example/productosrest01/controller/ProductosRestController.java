@@ -41,4 +41,57 @@ public class ProductosRestController {
         Producto newProducto = productosService.guardar(producto);
         return ResponseEntity.status(HttpStatus.CREATED).body(newProducto);
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Producto> actualizarProducto(
+            @PathVariable long id,
+            @RequestBody Producto producto) {
+
+        Optional<Producto> productoOriginal = productosService.buscarPorId(id);
+        if (!productoOriginal.isPresent()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Producto productoActualizado = productoOriginal.get();
+        productoActualizado.setNombre(producto.getNombre());
+        productoActualizado.setPrecio(producto.getPrecio());
+
+        Producto productoGuardado = productosService.guardar(productoActualizado);
+        return ResponseEntity.ok(productoGuardado);
+
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<Producto> actualizarParcialProducto(
+            @PathVariable Long id,
+            @RequestBody Producto productoActualizado
+    ){
+        Optional<Producto> productoOptional = productosService.buscarPorId(id);
+        if (!productoOptional.isPresent()) {
+            return ResponseEntity.notFound().build();
+        }
+        Producto producto = productoOptional.get();
+        if (productoActualizado.getNombre() != null) {
+            producto.setNombre(productoActualizado.getNombre());
+        }
+        if (productoActualizado.getPrecio() != null) {
+            producto.setPrecio(productoActualizado.getPrecio());
+        }
+        Producto productoGuardado = productosService.guardar(producto);
+        return ResponseEntity.ok(productoGuardado);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Producto> eliminarProducto(@PathVariable long id) {
+        Optional<Producto> productoOptional = productosService.buscarPorId(id);
+        if (!productoOptional.isPresent()) {
+            return ResponseEntity.notFound().build();
+        }
+        productosService.eliminar(id);
+        return ResponseEntity.noContent().build();
+    }
+
+
+
+
 }
