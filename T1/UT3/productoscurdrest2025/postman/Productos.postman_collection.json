@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "7dbbe737-8143-4ce1-913c-a97c656d9dbe",
+		"_postman_id": "f37fe8dc-a23b-427f-ab4e-cf8abcc9eb6f",
 		"name": "Productos REST API (v0)",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "39461419"
@@ -147,6 +147,120 @@
 						"api",
 						"productos",
 						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "{{base-url}}/api/productos/buscar/Portátil Lenovo",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "nombre",
+							"value": "Portátil Lenovo",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{base-url}}/api/productos/buscar/Portátil Lenovo",
+					"host": [
+						"{{base-url}}"
+					],
+					"path": [
+						"api",
+						"productos",
+						"buscar",
+						"Portátil Lenovo"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "New Request",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/x-www-form-urlencoded"
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "nombre",
+							"value": "Mac Book Pro",
+							"type": "text"
+						},
+						{
+							"key": "precio",
+							"value": "1300.75",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/productos/crear-form",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"productos",
+						"crear-form"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8080/api/productos/idsearching?id=2\n",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "id",
+							"value": "1",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/productos/idsearching?id=2\n",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"productos",
+						"idsearching"
+					],
+					"query": [
+						{
+							"key": "id",
+							"value": "2\n"
+						}
 					]
 				}
 			},
