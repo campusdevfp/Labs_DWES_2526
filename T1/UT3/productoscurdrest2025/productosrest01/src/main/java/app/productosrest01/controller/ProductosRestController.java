@@ -53,8 +53,48 @@ public class ProductosRestController {
                 .map(p -> ResponseEntity.status(HttpStatus.OK).body(p))
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
-//
-//
+
+    // GET api/productos/idsearching?id=2
+    @GetMapping("/idsearching")
+    public ResponseEntity<Producto> getProductByIdParam(@RequestParam("id") Long id){
+        Optional<Producto> producto = productoService.buscarPorId(id);
+        return producto
+                .map(p -> ResponseEntity.status(HttpStatus.OK).body(p))
+                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
+
+
+    // GET /api/productos/filtro?nombre=pan&min=5&max=20
+    // GET /api/productos/filtro?nombre=pan
+    // GET /api/productos/filtro?min=10&max=50
+    // GET /api/productos/filtro?nombre=pan&min=5&max=20
+    @GetMapping("/filtro")
+    public ResponseEntity<List<Producto>> filtrarProductos(
+            @RequestParam(required = false) String nombre,
+            @RequestParam(required = false) Double min,
+            @RequestParam(required = false) Double max) {
+
+        List<Producto> filtrados = productoService.listar().stream()
+                .filter(p -> nombre == null || p.getNombre().toLowerCase().contains(nombre.toLowerCase()))
+                .filter(p -> min == null || p.getPrecio() >= min)
+                .filter(p -> max == null || p.getPrecio() <= max)
+                .toList();
+
+        return ResponseEntity.ok(filtrados);
+    }
+
+
+    // GET /api/productos/buscar-form?nombre=valor
+    @GetMapping("/buscar-form")
+    public ResponseEntity<List<Producto>> buscarPorNombreForm(@RequestParam("nombre") String nombre) {
+        List<Producto> filtrados = productoService.listar().stream()
+                .filter(p -> p.getNombre().toLowerCase().contains(nombre.toLowerCase()))
+                .toList();
+
+        return ResponseEntity.ok(filtrados);
+    }
+
+
     // --- POST: crear un nuevo producto ---
     @PostMapping
     public ResponseEntity<Producto> createProduct(@RequestBody Producto producto) {
