@@ -83,6 +83,19 @@ public class ProductosRestController {
         return ResponseEntity.ok(filtrados);
     }
 
+    @PostMapping(value = "/crear-form", consumes = "application/x-www-form-urlencoded")
+    public ResponseEntity<Producto> crearDesdeFormulario(
+            @RequestParam String nombre,
+            @RequestParam Double precio) {
+
+        Producto producto = new Producto();
+        producto.setNombre(nombre);
+        producto.setPrecio(precio);
+
+        Producto nuevo = productoService.guardar(producto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(nuevo);
+    }
+
 
     // GET /api/productos/buscar-form?nombre=valor
     @GetMapping("/buscar-form")
