@@ -1,0 +1,57 @@
+{
+  "info": {
+    "name": "Funkos API REST",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "GET todos los Funkos",
+      "request": { "method": "GET", "url": "http://localhost:8080/funkos" }
+    },
+    {
+      "name": "GET por ID",
+      "request": { "method": "GET", "url": "http://localhost:8080/funkos/{{funko_id}}" }
+    },
+    {
+      "name": "GET por categoría (disney)",
+      "request": { "method": "GET", "url": "http://localhost:8080/funkos?categoria=disney" }
+    },
+    {
+      "name": "POST crear Funko",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{ \"nombre\": \"Funko Iron Man\", \"modelo\": \"MARVEL\", \"precio\": 19.99, \"cantidad\": 10, \"imagen\": \"ironman.jpg\", \"categoria\": \"marvel\", \"fechaLanzamiento\": \"2024-10-12\" }"
+        },
+        "url": "http://localhost:8080/funkos"
+      }
+    },
+    {
+      "name": "PUT actualizar Funko",
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{ \"nombre\": \"Funko Iron Man Actualizado\", \"modelo\": \"MARVEL\", \"precio\": 25.99, \"cantidad\": 12, \"imagen\": \"ironman2.jpg\", \"categoria\": \"marvel\", \"fechaLanzamiento\": \"2025-01-01\" }"
+        },
+        "url": "http://localhost:8080/funkos/{{funko_id}}"
+      }
+    },
+    {
+      "name": "PATCH modificar precio",
+      "request": {
+        "method": "PATCH",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{ \"precio\": 15.99 }" },
+        "url": "http://localhost:8080/funkos/{{funko_id}}"
+      }
+    },
+    {
+      "name": "DELETE eliminar Funko",
+      "request": { "method": "DELETE", "url": "http://localhost:8080/funkos/{{funko_id}}" }
+    }
+  ]
+}
