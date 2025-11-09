@@ -1,0 +1,39 @@
+version: "3.9"
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql-demo
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: pedidosdb
+      MYSQL_USER: spring
+      MYSQL_PASSWORD: spring
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql/init:/docker-entrypoint-initdb.d
+    networks:
+      - internal_net
+  app:
+    build: .
+    container_name: spring-demo
+    restart: on-failure
+    depends_on:
+      - mysql
+    networks:
+      - internal_net
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/pedidosdb?useSSL=false&allowPublicKeyRetrieval=true&createDatabaseIfNotExist=true
+      SPRING_DATASOURCE_USERNAME: spring
+      SPRING_DATASOURCE_PASSWORD: spring
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+volumes:
+  mysql_data:
+
+networks:
+  internal_net:
+    driver: bridge
