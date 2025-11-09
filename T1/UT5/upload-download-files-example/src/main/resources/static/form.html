@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Subida y descarga de archivos</title>
+    <style>
+        body { font-family: Arial; margin: 30px; }
+        #message { margin: 10px 0; color: green; }
+        #error { margin: 10px 0; color: red; }
+        ul { list-style-type: none; padding: 0; }
+        li { margin: 5px 0; }
+    </style>
+</head>
+<body>
+<h2>Subir un archivo</h2>
+<form id="uploadForm" enctype="multipart/form-data">
+    <input type="file" name="file" id="fileInput" required />
+    <button type="submit">Subir</button>
+</form>
+
+<div id="message"></div>
+<div id="error"></div>
+
+<h3>Archivos subidos</h3>
+<ul id="fileList"></ul>
+
+<script>
+    async function fetchFiles() {
+        const res = await fetch('/files');
+        const files = await res.json();
+        const list = document.getElementById('fileList');
+        list.innerHTML = '';
+        files.forEach(name => {
+            const li = document.createElement('li');
+            const link = document.createElement('a');
+            link.href = '/files/' + name;
+            link.textContent = name;
+            li.appendChild(link);
+            list.appendChild(li);
+        });
+    }
+
+    document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData();
+        formData.append('file', document.getElementById('fileInput').files[0]);
+        const res = await fetch('/upload', { method: 'POST', body: formData });
+        const text = await res.text();
+        document.getElementById('message').textContent = text.includes('✅') ? text : '';
+        document.getElementById('error').textContent = text.includes('❌') ? text : '';
+        fetchFiles();
+    });
+
+    fetchFiles();
+</script>
+</body>
+</html>

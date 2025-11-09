@@ -1,0 +1,43 @@
+{
+  "info": {
+    "name": "Spring File Upload Demo",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Upload File",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "file",
+              "type": "file",
+              "src": "test.txt"
+            }
+          ]
+        },
+        "url": { "raw": "http://localhost:8080/", "protocol": "http", "host": ["localhost"], "port": "8080", "path": [""] }
+      }
+    },
+    {
+      "name": "List Files",
+      "request": {
+        "method": "GET",
+        "url": { "raw": "http://localhost:8080/", "protocol": "http", "host": ["localhost"], "port": "8080", "path": [""] }
+      }
+    },
+    {
+      "name": "Get File by Name",
+      "request": {
+        "method": "GET",
+        "url": { "raw": "http://localhost:8080/files/{{filename}}", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["files", "{{filename}}"] }
+      },
+      "variable": [
+        { "key": "filename", "value": "test.txt" }
+      ]
+    }
+  ]
+}
