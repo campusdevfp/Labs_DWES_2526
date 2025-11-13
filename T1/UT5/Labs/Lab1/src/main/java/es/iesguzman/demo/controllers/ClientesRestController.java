@@ -30,10 +30,8 @@ public class ClientesRestController {
 
     @PutMapping("/{id}")
     public ResponseEntity<Cliente> update(@PathVariable("id") Long id, @RequestBody Cliente c) {
-        Cliente existing = service.findById(id);
-        existing.setNombre(c.getNombre());
-        existing.setEmail(c.getEmail());
-        return ResponseEntity.ok(service.save(existing));
+        Cliente updated = service.update(id, c);
+        return ResponseEntity.ok(updated);
     }
 
     @DeleteMapping("/{id}")

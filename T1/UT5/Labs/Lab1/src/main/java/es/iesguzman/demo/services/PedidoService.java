@@ -26,6 +26,11 @@ public class PedidoService {
         return pedidoRepo.findAll();
     }
 
+    public Pedido findById(Long id) {
+        return pedidoRepo.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Pedido no encontrado"));
+    }
+
     public List<Pedido> findByCliente(Long clienteId) {
         if (!clienteRepo.existsById(clienteId)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente no encontrado");

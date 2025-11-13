@@ -29,6 +29,15 @@ public class PedidosRestController {
     }
 
     /**
+     * GET /api/pedidos/{id}
+     * Obtiene un pedido por id
+     */
+    @GetMapping("/pedidos/{id}")
+    public ResponseEntity<Pedido> getById(@PathVariable("id") Long id) {
+        return ResponseEntity.ok(service.findById(id));
+    }
+
+    /**
      * GET /api/clientes/{id}/pedidos
      * Lista todos los pedidos de un cliente concreto
      */

@@ -21,7 +21,19 @@
               "port": "8080",
               "path": ["api", "clientes"]
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.expect(pm.response.code).to.eql(200); });",
+                  "pm.test('Response is JSON array or empty', function () { pm.expect(() => JSON.parse(pm.response.text())).to.not.throw(); });"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Obtener cliente por ID",
@@ -34,7 +46,19 @@
               "port": "8080",
               "path": ["api", "clientes", "1"]
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 or 404', function () { pm.expect(pm.response.code).to.be.oneOf([200, 404]); });",
+                  "pm.test('If 200 then body is valid JSON', function () { if (pm.response.code === 200) pm.expect(() => JSON.parse(pm.response.text())).to.not.throw(); });"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Crear cliente nuevo",
@@ -54,7 +78,19 @@
               "port": "8080",
               "path": ["api", "clientes"]
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201 or 400', function () { pm.expect(pm.response.code).to.be.oneOf([201, 400, 409]); });",
+                  "pm.test('If 201 then returned object has id', function () { if (pm.response.code === 201) { var j = pm.response.json(); pm.expect(j).to.have.property('id'); } });"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Actualizar cliente",
@@ -74,7 +110,19 @@
               "port": "8080",
               "path": ["api", "clientes", "1"]
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 or 404 or 400', function () { pm.expect(pm.response.code).to.be.oneOf([200, 404, 400]); });",
+                  "pm.test('If 200 then returned object has id', function () { if (pm.response.code === 200) { var j = pm.response.json(); pm.expect(j).to.have.property('id'); } });"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Eliminar cliente",
@@ -87,7 +135,19 @@
               "port": "8080",
               "path": ["api", "clientes", "3"]
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 204 or 404 or 409', function () { pm.expect(pm.response.code).to.be.oneOf([204, 404, 409]); });",
+                  "pm.test('If 204 then no content', function () { if (pm.response.code === 204) pm.expect(pm.response.text()).to.eql(''); });"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
@@ -105,7 +165,19 @@
               "port": "8080",
               "path": ["api", "pedidos"]
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.expect(pm.response.code).to.eql(200); });",
+                  "pm.test('Response is JSON array or empty', function () { pm.expect(() => JSON.parse(pm.response.text())).to.not.throw(); });"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Obtener pedidos de un cliente",
@@ -118,7 +190,19 @@
               "port": "8080",
               "path": ["api", "clientes", "1", "pedidos"]
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 or 404', function () { pm.expect(pm.response.code).to.be.oneOf([200, 404]); });",
+                  "pm.test('If 200 then JSON', function () { if (pm.response.code === 200) pm.expect(() => JSON.parse(pm.response.text())).to.not.throw(); });"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Crear pedido para cliente 1",
@@ -138,7 +222,19 @@
               "port": "8080",
               "path": ["api", "clientes", "1", "pedidos"]
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201 or 400 or 404', function () { pm.expect(pm.response.code).to.be.oneOf([201, 400, 404]); });",
+                  "pm.test('If 201 then returned object has id and cliente', function () { if (pm.response.code === 201) { var j = pm.response.json(); pm.expect(j).to.have.property('id'); pm.expect(j).to.have.property('cliente'); } });"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Eliminar pedido",
@@ -151,7 +247,19 @@
               "port": "8080",
               "path": ["api", "pedidos", "2"]
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 204 or 404', function () { pm.expect(pm.response.code).to.be.oneOf([204, 404]); });",
+                  "pm.test('If 204 then no content', function () { if (pm.response.code === 204) pm.expect(pm.response.text()).to.eql(''); });"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
@@ -176,7 +284,19 @@
               "port": "8080",
               "path": ["api", "clientes"]
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 400', function () { pm.expect(pm.response.code).to.eql(400); });",
+                  "pm.test('Response contains message', function () { if (pm.response.code === 400) { var j = pm.response.json(); pm.expect(j).to.have.property('message'); } });"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Crear pedido a cliente inexistente (404)",
@@ -196,7 +316,19 @@
               "port": "8080",
               "path": ["api", "clientes", "999", "pedidos"]
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 404', function () { pm.expect(pm.response.code).to.eql(404); });",
+                  "pm.test('Response contains message', function () { if (pm.response.code === 404) { var j = pm.response.json(); pm.expect(j).to.have.property('message'); } });"
+                ]
+              }
+            }
+          ]
         }
       ]
     }

@@ -47,10 +47,41 @@ public class ClienteService {
         }
     }
 
-    public void delete(Long id) {
-        if (!repository.existsById(id)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente no encontrado");
+    public Cliente update(Long id, Cliente cliente) {
+        Cliente existing = repository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente no encontrado"));
+
+        if (cliente.getNombre() == null || cliente.getEmail() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Campos 'nombre' y 'email' son obligatorios");
         }
-        repository.deleteById(id);
+
+        existing.setNombre(cliente.getNombre());
+        existing.setEmail(cliente.getEmail());
+
+        try {
+            return repository.save(existing);
+        } catch (DataIntegrityViolationException e) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "El email '" + cliente.getEmail() + "' ya está registrado");
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Error al actualizar el cliente: " + e.getMessage());
+        }
+    }
+
+    public void delete(Long id) {
+        // Cargar la entidad para que JPA tenga oportunidad de aplicar cascade/orphanRemoval
+        Cliente cliente = repository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente no encontrado"));
+        try {
+            repository.delete(cliente);
+        } catch (DataIntegrityViolationException e) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "No se puede eliminar el cliente debido a restricciones de integridad: " + e.getMessage());
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Error al eliminar el cliente: " + e.getMessage());
+        }
     }
 }
