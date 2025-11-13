@@ -1,9 +1,7 @@
-package service;
-
+package app.service;
 
 import app.model.Task;
 import app.repository.TaskRepository;
-import app.service.TaskServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class TaskServiceImplTest {
+class TaskServiceImplWithMocksTest {
 
     @Mock
     private TaskRepository repository;
@@ -27,19 +25,19 @@ class TaskServiceImplTest {
     @InjectMocks
     private TaskServiceImpl service;
 
-    private Map<Long, Task> tareas;
+    private Map<Long, Task> data;
 
     @BeforeEach
     void setUp() {
-        tareas = Map.of(
+        data = Map.of(
                 1L, new Task(1L, "Configurar CI", "Configurar GitHub Actions", "pendiente"),
                 2L, new Task(2L, "Escribir tests", "JUnit y Mockito", "completada")
         );
     }
 
     @Test
-    void findAll() {
-        when(repository.findAll()).thenReturn(List.copyOf(tareas.values()));
+    void findAll_returnsAllTasks() {
+        when(repository.findAll()).thenReturn(List.copyOf(data.values()));
 
         var list = service.findAll();
 
@@ -48,20 +46,22 @@ class TaskServiceImplTest {
                 () -> assertEquals(2, list.size())
         );
 
-//        verify(repository, times(1)).findAll();
     }
 
     @Test
-    void findById() {
-        when(repository.findById(1L)).thenReturn(Optional.of(tareas.get(1L)));
+    void findById_returnsTask() {
+        when(repository.findById(1L)).thenReturn(Optional.of(data.get(1L)));
 
-        var tarea = service.findById(1L);
+        var task = service.findById(1L);
 
         assertAll(
-                () -> assertNotNull(tarea),
-                () -> assertEquals("Configurar CI", tarea.getTitulo())
+                () -> assertNotNull(task),
+                () -> assertEquals("Configurar CI", task.getTitulo())
         );
 
-//        verify(repository, times(1)).findById(1L);
     }
+
+
+
 }
+
