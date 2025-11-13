@@ -19,7 +19,7 @@ public class ClientesRestController {
     public List<Cliente> getAll() { return service.findAll(); }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Cliente> getById(@PathVariable Long id) {
+    public ResponseEntity<Cliente> getById(@PathVariable("id") Long id) {
         return ResponseEntity.ok(service.findById(id));
     }
 
@@ -29,7 +29,7 @@ public class ClientesRestController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Cliente> update(@PathVariable Long id, @RequestBody Cliente c) {
+    public ResponseEntity<Cliente> update(@PathVariable("id") Long id, @RequestBody Cliente c) {
         Cliente existing = service.findById(id);
         existing.setNombre(c.getNombre());
         existing.setEmail(c.getEmail());
@@ -37,7 +37,7 @@ public class ClientesRestController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable("id") Long id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }

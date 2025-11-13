@@ -1,9 +1,4 @@
-es\iesguzman\demo\services\PedidoService.class
-es\iesguzman\demo\services\ClienteService.class
-es\iesguzman\demo\controllers\PedidosRestController.class
 es\iesguzman\demo\models\Cliente.class
-es\iesguzman\demo\repositories\ClienteRepository.class
 es\iesguzman\demo\repositories\PedidoRepository.class
-es\iesguzman\demo\controllers\ClientesRestController.class
 es\iesguzman\demo\DemoApplication.class
 es\iesguzman\demo\models\Pedido.class
