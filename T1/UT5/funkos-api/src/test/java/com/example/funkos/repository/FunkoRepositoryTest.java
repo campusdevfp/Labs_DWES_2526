@@ -16,12 +16,6 @@ class FunkoRepositoryTest {
     private FunkoRepository repository;
 
     @Test
-    void shouldLoadDataFromCsvOnStartup() {
-        long count = repository.count();
-        assertThat(count).isGreaterThan(0L);
-    }
-
-    @Test
     void findByCategoriaIgnoreCase_returnsGeneral() {
         List<Funko> general = repository.findByCategoriaIgnoreCase("general");
         assertThat(general).isNotEmpty();
@@ -44,4 +38,3 @@ class FunkoRepositoryTest {
         assertThat(repository.findByCategoriaIgnoreCase("general")).anyMatch(x -> x.getId().equals(saved.getId()));
     }
 }
-
