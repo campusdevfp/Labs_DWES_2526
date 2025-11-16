@@ -1,0 +1,12 @@
+es\iesguzman\productos\validator\ProductoValidator.class
+es\iesguzman\productos\exception\GlobalExceptionHandler.class
+es\iesguzman\productos\dto\ProductoRequestDto.class
+es\iesguzman\productos\exception\ProductoNotFoundException.class
+es\iesguzman\productos\mapper\ProductoMapper.class
+es\iesguzman\productos\exception\ProductoInvalidoException.class
+es\iesguzman\productos\DemoApplication.class
+es\iesguzman\productos\domain\Producto.class
+es\iesguzman\productos\dto\ProductoResponseDto.class
+es\iesguzman\productos\service\ProductoService.class
+es\iesguzman\productos\controller\ProductoController.class
+es\iesguzman\productos\repository\ProductoRepository.class

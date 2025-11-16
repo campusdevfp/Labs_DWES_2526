@@ -1,0 +1,119 @@
+{
+  "info": {
+    "_postman_id": "1a2b3c4d-1234-5678-90ab-abcdef123456",
+    "name": "Productos API - Colección de pruebas",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "yaiyai"
+  },
+  "item": [
+    {
+      "name": "GET - Obtener producto por ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/productos/1",
+          "host": ["{{base_url}}"],
+          "path": ["api", "productos", "1"]
+        },
+        "description": "Obtiene un producto por su ID (usa los datos precargados en H2)."
+      },
+      "response": []
+    },
+    {
+      "name": "GET - Buscar por categoría",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/productos/categoria/Periféricos",
+          "host": ["{{base_url}}"],
+          "path": ["api", "productos", "categoria", "Periféricos"]
+        },
+        "description": "Devuelve todos los productos cuya categoría contenga el texto indicado (case-insensitive)."
+      },
+      "response": []
+    },
+    {
+      "name": "POST - Crear nuevo producto",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Auriculares Inalámbricos\",\n  \"precio\": 59.99,\n  \"stock\": 30,\n  \"categoria\": \"Audio\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/productos",
+          "host": ["{{base_url}}"],
+          "path": ["api", "productos"]
+        },
+        "description": "Crea un nuevo producto. Si algún campo no pasa la validación (p. ej. precio ≤ 0), devuelve error 400 con el mensaje correspondiente."
+      },
+      "response": []
+    },
+    {
+      "name": "PUT - Actualizar producto existente",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Auriculares Pro\",\n  \"precio\": 79.90,\n  \"stock\": 25,\n  \"categoria\": \"Audio\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/productos/1",
+          "host": ["{{base_url}}"],
+          "path": ["api", "productos", "1"]
+        },
+        "description": "Actualiza un producto existente por su ID. Si no existe, devuelve 404."
+      },
+      "response": []
+    },
+    {
+      "name": "DELETE - Borrar producto",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/productos/2",
+          "host": ["{{base_url}}"],
+          "path": ["api", "productos", "2"]
+        },
+        "description": "Elimina el producto con ID 2. Si no existe, devuelve 404."
+      },
+      "response": []
+    },
+    {
+      "name": "DELETE - Limpiar caché",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/productos/cache",
+          "host": ["{{base_url}}"],
+          "path": ["api", "productos", "cache"]
+        },
+        "description": "Vacía la caché de productos en memoria (Caffeine)."
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080",
+      "type": "string"
+    }
+  ]
+}

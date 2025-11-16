@@ -1,0 +1,12 @@
+C:\Users\madrid\ws\Labs_DWES_2526\T1\UT5\productos-api-test-dto\src\main\java\DemoApplication.java
+C:\Users\madrid\ws\Labs_DWES_2526\T1\UT5\productos-api-test-dto\src\main\java\es\iesguzman\productos\controller\ProductoController.java
+C:\Users\madrid\ws\Labs_DWES_2526\T1\UT5\productos-api-test-dto\src\main\java\es\iesguzman\productos\domain\Producto.java
+C:\Users\madrid\ws\Labs_DWES_2526\T1\UT5\productos-api-test-dto\src\main\java\es\iesguzman\productos\dto\ProductoRequestDto.java
+C:\Users\madrid\ws\Labs_DWES_2526\T1\UT5\productos-api-test-dto\src\main\java\es\iesguzman\productos\dto\ProductoResponseDto.java
+C:\Users\madrid\ws\Labs_DWES_2526\T1\UT5\productos-api-test-dto\src\main\java\es\iesguzman\productos\exception\GlobalExceptionHandler.java
+C:\Users\madrid\ws\Labs_DWES_2526\T1\UT5\productos-api-test-dto\src\main\java\es\iesguzman\productos\exception\ProductoInvalidoException.java
+C:\Users\madrid\ws\Labs_DWES_2526\T1\UT5\productos-api-test-dto\src\main\java\es\iesguzman\productos\exception\ProductoNotFoundException.java
+C:\Users\madrid\ws\Labs_DWES_2526\T1\UT5\productos-api-test-dto\src\main\java\es\iesguzman\productos\mapper\ProductoMapper.java
+C:\Users\madrid\ws\Labs_DWES_2526\T1\UT5\productos-api-test-dto\src\main\java\es\iesguzman\productos\repository\ProductoRepository.java
+C:\Users\madrid\ws\Labs_DWES_2526\T1\UT5\productos-api-test-dto\src\main\java\es\iesguzman\productos\service\ProductoService.java
+C:\Users\madrid\ws\Labs_DWES_2526\T1\UT5\productos-api-test-dto\src\main\java\es\iesguzman\productos\validator\ProductoValidator.java

@@ -1,0 +1,5 @@
+es\iesguzman\productos\service\ProductoServiceIntegrationTest.class
+es\iesguzman\productos\controller\ProductoControllerTest.class
+es\iesguzman\productos\service\ProductoServiceUnitTest.class
+es\iesguzman\productos\dto\ProductoRequestDtoTest.class
+es\iesguzman\productos\dto\ProductoResponseDtoTest.class

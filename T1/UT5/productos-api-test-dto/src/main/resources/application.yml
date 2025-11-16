@@ -1,0 +1,21 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:productosdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: 
+  h2:
+    console:
+      enabled: true
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+  sql:
+    init:
+      mode: always
+  cache:
+    type: caffeine
+    cache-names: productos
+    caffeine:
+      spec: maximumSize=100,expireAfterWrite=10m
