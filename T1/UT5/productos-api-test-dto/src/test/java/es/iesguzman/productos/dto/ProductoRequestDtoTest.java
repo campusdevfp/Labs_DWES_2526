@@ -10,8 +10,29 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class ProductoRequestDtoTest {
 
+    // Validator reutilizable para todas las pruebas de validación.
+    // Lo inicializamos una vez en @BeforeAll porque crear un ValidatorFactory
+    // y obtener un Validator es relativamente costoso y no depende del estado
+    // de cada test. Esto también evita repetir código en cada test.
     private static Validator validator;
 
+    /**
+     * Inicialización del Validator.
+     *
+     * Por qué lo hacemos aquí:
+     * - Las clases DTO usan anotaciones de validación (jakarta.validation / Bean Validation)
+     *   como @NotNull, @Min, @Size, etc. Para comprobar estas restricciones en tests
+     *   unitarios necesitamos un objeto Validator.
+     * - @BeforeAll ejecuta este setup una vez para toda la clase de tests, reduciendo
+     *   el coste y dejándolo disponible para todos los métodos de prueba.
+     *
+     * Nota práctica:
+     * - No hacemos aquí pruebas de integración de Spring, sólo validaciones locales
+     *   sobre los objetos DTO.
+     * - En tests que dependan del contexto de Spring se usaría la infraestructua de
+     *   Spring (por ejemplo, @SpringBootTest), pero aquí queremos pruebas unitarias
+     *   aisladas, por eso se usa el Validator directo.
+     */
     @BeforeAll
     static void setUp() {
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
@@ -52,6 +73,7 @@ class ProductoRequestDtoTest {
 
         var violations = validator.validate(dto);
 
+        // Agrupamos los asserts con assertAll, siguiendo la guía (inittesting.md)
         assertAll(
             () -> assertTrue(violations.isEmpty())
         );
@@ -63,6 +85,9 @@ class ProductoRequestDtoTest {
 
         var violations = validator.validate(dto);
 
+        // Comprobaciones sobre los mensajes de violación. Usamos contains porque
+        // los mensajes exactos dependen de la configuración de los mensajes y
+        // del locale; buscamos fragmentos significativos ('vacío', 'mayor que 0', 'negativo').
         assertAll(
             () -> assertFalse(violations.isEmpty()),
             () -> assertTrue(violations.stream().anyMatch(v -> v.getMessage().contains("vacío"))),
