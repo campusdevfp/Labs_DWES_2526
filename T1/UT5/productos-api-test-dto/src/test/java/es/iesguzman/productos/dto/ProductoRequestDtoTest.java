@@ -35,8 +35,10 @@ class ProductoRequestDtoTest {
      */
     @BeforeAll
     static void setUp() {
-        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-        validator = factory.getValidator();
+        // Usar try-with-resources para asegurar que ValidatorFactory se cierra correctamente
+        try (ValidatorFactory factory = Validation.buildDefaultValidatorFactory()) {
+            validator = factory.getValidator();
+        }
     }
 
     @Test
