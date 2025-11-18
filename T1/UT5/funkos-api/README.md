@@ -203,4 +203,48 @@ JDBC URL: `jdbc:h2:mem:funkosdb`
 
 ---
 
-¿Quieres que te genere un **README.md profesional** (para GitHub o el aula), con este mismo resumen estructurado, instrucciones de ejecución y ejemplos Postman incluidos?
+## 🧪 ¿Qué son los tests automatizados y para qué sirven?
+
+Los **tests** son pequeños programas que comprueban automáticamente que el código hace lo que debe. Permiten verificar comportamientos de forma **repetible**, **rápida** y **sin intervención manual**.
+
+### 🎯 Para qué sirven
+
+- **Previenen regresiones**: si algo que funcionaba se rompe tras un cambio, el test lo detecta.
+- **Documentan requisitos**: muestran, con ejemplos ejecutables, cómo debe comportarse el sistema.
+- **Dan seguridad al refactorizar**: permiten mejorar el diseño sin miedo a romper funcionalidad existente.
+- **Aceleran el feedback**: los errores se detectan en segundos, no en producción.
+- **Facilitan la integración continua**: el pipeline de CI puede ejecutar los tests en cada commit.
+- **Ayudan a aislar errores**: indican exactamente qué caso de uso está fallando.
+
+### 🧩 Tipos básicos de tests
+
+- **Unitarios**: prueban una clase o método aislado.  
+  Ejemplo: tests del **servicio** usando *mocks* del repositorio.
+- **Integración**: validan la interacción entre capas o con infraestructura.  
+  Ejemplo: tests con **MockMvc** para endpoints REST, tests de repositorios con BD H2.
+- **End‑to‑end (E2E)**: recorren el flujo completo como lo haría un usuario real.
+- **Contrato / compatibilidad**: aseguran que una API o servicio no rompe a sus consumidores.
+- **Rendimiento**: miden tiempos de respuesta y consumo de recursos.
+
+### ✅ Buenas prácticas mínimas
+
+- **AAA (Arrange, Act, Assert)**: prepara los datos, ejecuta la acción y verifica el resultado.
+- **Deterministas**: no deben depender del reloj, la red o aleatoriedad sin controlar.
+- **Aislados**: cada test debe ser independiente y no compartir estado con otros.
+- **Rápidos**: para poder ejecutarlos en cada guardado o commit.
+- **Nombres descriptivos**: el nombre del test debe indicar qué comportamiento se espera.
+
+### 🔍 Aplicado a este proyecto
+
+En esta API de Funkos, los tests se pueden organizar así:
+
+- **Tests de servicio con mocks**: validan la lógica de negocio del `FunkoService` sin depender de la BD.
+- **Tests de controlador con MockMvc**: comprueban rutas, estados HTTP y formato JSON de las respuestas.
+- **Tests de repositorio**: verifican las consultas JPA y la persistencia en la base de datos H2.
+
+En conjunto, estos tests dan **confianza** para:
+
+- Añadir nuevas funcionalidades.
+- Corregir bugs.
+- Refactorizar el código.
+- Desplegar la aplicación con menos riesgo.

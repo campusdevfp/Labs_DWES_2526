@@ -1,0 +1,4 @@
+com\example\funkos\controller\FunkosRestControllerMockMvcIntegrationTest.class
+com\example\funkos\repository\FunkoRepositoryTest.class
+com\example\funkos\service\FunkoServiceTest.class
+com\example\funkos\service\FunkoServiceMockTest.class

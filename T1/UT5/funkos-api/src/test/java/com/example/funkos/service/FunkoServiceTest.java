@@ -87,29 +87,7 @@ class FunkoServiceTest {
         assertEquals(saved.getId(), actualizado.getId());
     }
 
-    @Test
-    void patch() {
-        Funko base = new Funko();
-        base.setNombre("Patch Base");
-        base.setModelo("TEST");
-        base.setPrecio(10.0);
-        base.setCantidad(1);
-        base.setImagen("img.jpg");
-        base.setCategoria("general");
-        base.setFechaLanzamiento(LocalDate.now());
-        Funko saved = service.create(base);
 
-        Map<String, Object> updates = Map.of(
-                "nombre", "Patch Hecho",
-                "precio", 15.5,
-                "cantidad", 5
-        );
-        Funko patched = service.patch(saved.getId(), updates);
-
-        assertEquals("Patch Hecho", patched.getNombre());
-        assertEquals(15.5, patched.getPrecio());
-        assertEquals(5, patched.getCantidad());
-    }
 
     @Test
     void delete() {

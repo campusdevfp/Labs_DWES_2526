@@ -11,7 +11,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDate;
 import java.util.*;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -50,7 +50,7 @@ class FunkoServiceMockTest {
         when(repository.findAll()).thenReturn(datos);
 
         List<Funko> result = service.getAll(null);
-        assertThat(result).hasSize(2);
+        assertEquals(2, result.size());
         verify(repository, times(1)).findAll();
         verify(repository, never()).findByCategoriaIgnoreCase(any());
     }
@@ -61,8 +61,8 @@ class FunkoServiceMockTest {
         when(repository.findByCategoriaIgnoreCase("general")).thenReturn(datos);
 
         List<Funko> result = service.getAll("general");
-        assertThat(result).hasSize(1);
-        assertThat(result).allMatch(f -> "general".equalsIgnoreCase(f.getCategoria()));
+        assertEquals(1, result.size());
+        assertTrue(result.stream().allMatch(f -> "general".equalsIgnoreCase(f.getCategoria())));
         verify(repository, times(1)).findByCategoriaIgnoreCase("general");
         verify(repository, never()).findAll();
     }
@@ -74,8 +74,8 @@ class FunkoServiceMockTest {
         when(repository.findById(id)).thenReturn(Optional.of(f));
 
         Funko result = service.getById(id);
-        assertThat(result.getId()).isEqualTo(id);
-        assertThat(result.getNombre()).isEqualTo("Encontrado");
+        assertEquals(id, result.getId());
+        assertEquals("Encontrado", result.getNombre());
         verify(repository, times(1)).findById(id);
     }
 
@@ -107,8 +107,8 @@ class FunkoServiceMockTest {
         });
 
         Funko creado = service.create(nuevo);
-        assertThat(creado.getId()).isNotNull();
-        assertThat(creado.getFechaCreacion()).isNotNull();
+        assertNotNull(creado.getId());
+        assertNotNull(creado.getFechaCreacion());
         verify(repository, times(1)).save(any(Funko.class));
     }
 
@@ -130,9 +130,9 @@ class FunkoServiceMockTest {
         cambios.setFechaLanzamiento(LocalDate.now());
 
         Funko actualizado = service.update(id, cambios);
-        assertThat(actualizado.getId()).isEqualTo(id);
-        assertThat(actualizado.getFechaCreacion()).isEqualTo(fechaCreacionOriginal);
-        assertThat(actualizado.getNombre()).isEqualTo("Actualizado");
+        assertEquals(id, actualizado.getId());
+        assertEquals(fechaCreacionOriginal, actualizado.getFechaCreacion());
+        assertEquals("Actualizado", actualizado.getNombre());
         verify(repository, times(1)).findById(id);
         verify(repository, times(1)).save(any(Funko.class));
     }
@@ -153,9 +153,9 @@ class FunkoServiceMockTest {
         );
         Funko patched = service.patch(id, updates);
 
-        assertThat(patched.getNombre()).isEqualTo("Patch Hecho");
-        assertThat(patched.getPrecio()).isEqualTo(15.5);
-        assertThat(patched.getCantidad()).isEqualTo(5);
+        assertEquals("Patch Hecho", patched.getNombre());
+        assertEquals(15.5, patched.getPrecio(), 0.0001);
+        assertEquals(5, patched.getCantidad());
         verify(repository, times(1)).findById(id);
         verify(repository, times(1)).save(any(Funko.class));
     }
