@@ -47,14 +47,14 @@ public class ProductoService {
         return productoMapper.toResponseDto(producto);
     }
 
-    @Cacheable("productos")
+    @Cacheable(value = "productos", key = "'all'")
     public List<ProductoResponseDto> getAllProductos() {
         return productoRepository.findByActivoTrue().stream()
                 .map(productoMapper::toResponseDto)
                 .collect(Collectors.toList());
     }
 
-    @Cacheable("productos")
+    @Cacheable(value = "productos", key = "'categoria-' + #categoriaId")
     public List<ProductoResponseDto> getProductosByCategoria(Long categoriaId) {
         return productoRepository.findByCategoriaId(categoriaId).stream()
                 .filter(Producto::getActivo)
@@ -62,7 +62,7 @@ public class ProductoService {
                 .collect(Collectors.toList());
     }
 
-    @Cacheable("productos")
+    @Cacheable(value = "productos", key = "'search-' + #nombre")
     public List<ProductoResponseDto> searchProductosByNombre(String nombre) {
         return productoRepository.findByNombreContainingAndActivoTrue(nombre).stream()
                 .map(productoMapper::toResponseDto)

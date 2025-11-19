@@ -57,14 +57,14 @@ public class PedidoService {
         return pedidoMapper.toResponseDto(pedido);
     }
 
-    @Cacheable("pedidos")
+    @Cacheable(value = "pedidos", key = "'all'")
     public List<PedidoResponseDto> getAllPedidos() {
         return pedidoRepository.findAll().stream()
                 .map(pedidoMapper::toResponseDto)
                 .collect(Collectors.toList());
     }
 
-    @Cacheable("pedidos")
+    @Cacheable(value = "pedidos", key = "'usuario-' + #usuarioId")
     public List<PedidoResponseDto> getPedidosByUsuario(Long usuarioId) {
         return pedidoRepository.findByUsuarioId(usuarioId).stream()
                 .map(pedidoMapper::toResponseDto)

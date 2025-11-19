@@ -10,6 +10,7 @@ import es.iesguzman.demo.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -23,6 +24,7 @@ public class UsuarioService {
     private final UsuarioRepository usuarioRepository;
     private final UsuarioMapper usuarioMapper;
 
+    @CacheEvict(value = "usuarios", allEntries = true)
     public UsuarioResponseDto createUsuario(UsuarioRequestDto dto) {
         if (usuarioRepository.existsByUsername(dto.getUsername())) {
             throw new UsuarioBadRequestException("El username ya existe");
@@ -44,14 +46,17 @@ public class UsuarioService {
         return usuarioMapper.toResponseDto(usuario);
     }
 
-    @Cacheable("usuarios")
+    @Cacheable(value = "usuarios", key = "'all'")
     public List<UsuarioResponseDto> getAllUsuarios() {
         return usuarioRepository.findAll().stream()
                 .map(usuarioMapper::toResponseDto)
                 .collect(Collectors.toList());
     }
 
-    @CacheEvict(value = "usuarios", key = "#id")
+    @Caching(evict = {
+        @CacheEvict(value = "usuarios", key = "#id"),
+        @CacheEvict(value = "usuarios", allEntries = true)
+    })
     public UsuarioResponseDto updateUsuario(Long id, UsuarioRequestDto dto) {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new UsuarioNotFoundException("Usuario no encontrado"));
@@ -61,7 +66,10 @@ public class UsuarioService {
         return usuarioMapper.toResponseDto(saved);
     }
 
-    @CacheEvict(value = "usuarios", key = "#id")
+    @Caching(evict = {
+        @CacheEvict(value = "usuarios", key = "#id"),
+        @CacheEvict(value = "usuarios", allEntries = true)
+    })
     public void deleteUsuario(Long id) {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new UsuarioNotFoundException("Usuario no encontrado"));

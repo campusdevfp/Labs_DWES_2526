@@ -49,21 +49,21 @@ public class ResenaService {
         return resenaMapper.toResponseDto(resena);
     }
 
-    @Cacheable("resenas")
+    @Cacheable(value = "resenas", key = "'all'")
     public List<ResenaResponseDto> getAllResenas() {
         return resenaRepository.findAll().stream()
                 .map(resenaMapper::toResponseDto)
                 .collect(Collectors.toList());
     }
 
-    @Cacheable("resenas")
+    @Cacheable(value = "resenas", key = "'producto-' + #productoId")
     public List<ResenaResponseDto> getResenasByProducto(Long productoId) {
         return resenaRepository.findByProductoId(productoId).stream()
                 .map(resenaMapper::toResponseDto)
                 .collect(Collectors.toList());
     }
 
-    @Cacheable("resenas")
+    @Cacheable(value = "resenas", key = "'usuario-' + #usuarioId")
     public List<ResenaResponseDto> getResenasByUsuario(Long usuarioId) {
         return resenaRepository.findByUsuarioId(usuarioId).stream()
                 .map(resenaMapper::toResponseDto)
