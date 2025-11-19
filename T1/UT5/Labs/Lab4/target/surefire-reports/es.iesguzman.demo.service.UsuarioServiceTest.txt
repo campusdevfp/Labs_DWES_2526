@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: es.iesguzman.demo.service.UsuarioServiceTest
+-------------------------------------------------------------------------------
+Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.103 s -- in es.iesguzman.demo.service.UsuarioServiceTest
