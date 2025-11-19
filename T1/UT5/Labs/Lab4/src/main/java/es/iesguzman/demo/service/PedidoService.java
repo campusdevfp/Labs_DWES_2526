@@ -15,6 +15,7 @@ import es.iesguzman.demo.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -29,6 +30,7 @@ public class PedidoService {
     private final ProductoRepository productoRepository;
     private final PedidoMapper pedidoMapper;
 
+    @CacheEvict(value = "pedidos", allEntries = true)
     public PedidoResponseDto createPedido(PedidoRequestDto dto) {
         Usuario usuario = usuarioRepository.findById(dto.getUsuarioId())
                 .orElseThrow(() -> new PedidoBadRequestException("Usuario no encontrado"));
@@ -69,7 +71,10 @@ public class PedidoService {
                 .collect(Collectors.toList());
     }
 
-    @CacheEvict(value = "pedidos", key = "#id")
+    @Caching(evict = {
+        @CacheEvict(value = "pedidos", key = "#id"),
+        @CacheEvict(value = "pedidos", allEntries = true)
+    })
     public PedidoResponseDto updateEstadoPedido(Long id, EstadoPedido estado) {
         Pedido pedido = pedidoRepository.findById(id)
                 .orElseThrow(() -> new PedidoNotFoundException("Pedido no encontrado"));
@@ -78,7 +83,10 @@ public class PedidoService {
         return pedidoMapper.toResponseDto(saved);
     }
 
-    @CacheEvict(value = "pedidos", key = "#id")
+    @Caching(evict = {
+        @CacheEvict(value = "pedidos", key = "#id"),
+        @CacheEvict(value = "pedidos", allEntries = true)
+    })
     public void deletePedido(Long id) {
         Pedido pedido = pedidoRepository.findById(id)
                 .orElseThrow(() -> new PedidoNotFoundException("Pedido no encontrado"));

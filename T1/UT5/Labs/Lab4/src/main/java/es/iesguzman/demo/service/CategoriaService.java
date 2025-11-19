@@ -10,6 +10,7 @@ import es.iesguzman.demo.repository.CategoriaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -22,6 +23,7 @@ public class CategoriaService {
     private final CategoriaRepository categoriaRepository;
     private final CategoriaMapper categoriaMapper;
 
+    @CacheEvict(value = "categorias", allEntries = true)
     public CategoriaResponseDto createCategoria(CategoriaRequestDto dto) {
         if (categoriaRepository.existsByNombre(dto.getNombre())) {
             throw new CategoriaBadRequestException("La categoría ya existe");
@@ -45,7 +47,10 @@ public class CategoriaService {
                 .collect(Collectors.toList());
     }
 
-    @CacheEvict(value = "categorias", key = "#id")
+    @Caching(evict = {
+        @CacheEvict(value = "categorias", key = "#id"),
+        @CacheEvict(value = "categorias", allEntries = true)
+    })
     public CategoriaResponseDto updateCategoria(Long id, CategoriaRequestDto dto) {
         Categoria categoria = categoriaRepository.findById(id)
                 .orElseThrow(() -> new CategoriaNotFoundException("Categoría no encontrada"));
@@ -56,7 +61,10 @@ public class CategoriaService {
         return categoriaMapper.toResponseDto(saved);
     }
 
-    @CacheEvict(value = "categorias", key = "#id")
+    @Caching(evict = {
+        @CacheEvict(value = "categorias", key = "#id"),
+        @CacheEvict(value = "categorias", allEntries = true)
+    })
     public void deleteCategoria(Long id) {
         Categoria categoria = categoriaRepository.findById(id)
                 .orElseThrow(() -> new CategoriaNotFoundException("Categoría no encontrada"));

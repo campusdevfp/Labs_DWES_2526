@@ -14,6 +14,7 @@ import es.iesguzman.demo.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -28,6 +29,7 @@ public class ResenaService {
     private final ProductoRepository productoRepository;
     private final ResenaMapper resenaMapper;
 
+    @CacheEvict(value = "resenas", allEntries = true)
     public ResenaResponseDto createResena(ResenaRequestDto dto) {
         Usuario usuario = usuarioRepository.findById(dto.getUsuarioId())
                 .orElseThrow(() -> new ResenaBadRequestException("Usuario no encontrado"));
@@ -68,14 +70,20 @@ public class ResenaService {
                 .collect(Collectors.toList());
     }
 
-    @CacheEvict(value = "resenas", key = "#id")
+    @Caching(evict = {
+        @CacheEvict(value = "resenas", key = "#id"),
+        @CacheEvict(value = "resenas", allEntries = true)
+    })
     public void deleteResena(Long id) {
         Resena resena = resenaRepository.findById(id)
                 .orElseThrow(() -> new ResenaNotFoundException("Reseña no encontrada"));
         resenaRepository.delete(resena);
     }
 
-    @CacheEvict(value = "resenas", key = "#id")
+    @Caching(evict = {
+        @CacheEvict(value = "resenas", key = "#id"),
+        @CacheEvict(value = "resenas", allEntries = true)
+    })
     public ResenaResponseDto updateResena(Long id, ResenaRequestDto dto) {
         Resena resena = resenaRepository.findById(id)
                 .orElseThrow(() -> new ResenaNotFoundException("Reseña no encontrada"));

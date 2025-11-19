@@ -12,6 +12,7 @@ import es.iesguzman.demo.repository.ProductoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -25,6 +26,7 @@ public class ProductoService {
     private final CategoriaRepository categoriaRepository;
     private final ProductoMapper productoMapper;
 
+    @CacheEvict(value = "productos", allEntries = true)
     public ProductoResponseDto createProducto(ProductoRequestDto dto) {
         if (productoRepository.existsByNombre(dto.getNombre())) {
             throw new ProductoBadRequestException("El producto ya existe");
@@ -67,7 +69,10 @@ public class ProductoService {
                 .collect(Collectors.toList());
     }
 
-    @CacheEvict(value = "productos", key = "#id")
+    @Caching(evict = {
+        @CacheEvict(value = "productos", key = "#id"),
+        @CacheEvict(value = "productos", allEntries = true)
+    })
     public ProductoResponseDto updateProducto(Long id, ProductoRequestDto dto) {
         Producto producto = productoRepository.findById(id)
                 .orElseThrow(() -> new ProductoNotFoundException("Producto no encontrado"));
@@ -83,7 +88,10 @@ public class ProductoService {
         return productoMapper.toResponseDto(saved);
     }
 
-    @CacheEvict(value = "productos", key = "#id")
+    @Caching(evict = {
+        @CacheEvict(value = "productos", key = "#id"),
+        @CacheEvict(value = "productos", allEntries = true)
+    })
     public void deleteProducto(Long id) {
         Producto producto = productoRepository.findById(id)
                 .orElseThrow(() -> new ProductoNotFoundException("Producto no encontrado"));
