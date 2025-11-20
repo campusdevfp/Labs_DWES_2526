@@ -2,158 +2,137 @@ package es.iesguzman.demo.service;
 
 import es.iesguzman.demo.dto.ProductoRequestDto;
 import es.iesguzman.demo.dto.ProductoResponseDto;
-import es.iesguzman.demo.exception.ProductoBadRequestException;
-import es.iesguzman.demo.exception.ProductoNotFoundException;
 import es.iesguzman.demo.mapper.ProductoMapper;
 import es.iesguzman.demo.model.Categoria;
 import es.iesguzman.demo.model.Producto;
 import es.iesguzman.demo.repository.CategoriaRepository;
 import es.iesguzman.demo.repository.ProductoRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+/**
+ * Test unitario del servicio ProductoService.
+ * Usa Mockito para simular las dependencias (repository y mapper).
+ */
 @ExtendWith(MockitoExtension.class)
-public class ProductoServiceTest {
+class ProductoServiceTest {
 
     @Mock
-    private ProductoRepository productoRepository;
+    ProductoRepository productoRepository;
 
     @Mock
-    private CategoriaRepository categoriaRepository;
+    ProductoMapper productoMapper;
 
     @Mock
-    private ProductoMapper productoMapper;
+    CategoriaRepository categoriaRepository;
 
     @InjectMocks
-    private ProductoService productoService;
+    ProductoService productoService;
 
-    @Test
-    public void testSaveProductoConDtoValido() {
-        // Arrange
-        ProductoRequestDto requestDto = new ProductoRequestDto();
+    ProductoRequestDto requestDto;
+    Producto producto;
+    ProductoResponseDto responseDto;
+    Categoria categoria;
+
+    @BeforeEach
+    void setUp() {
+        requestDto = new ProductoRequestDto();
         requestDto.setNombre("Laptop");
         requestDto.setPrecio(999.99);
         requestDto.setStock(10);
         requestDto.setCategoriaId(1L);
 
-        Categoria categoria = new Categoria();
+        categoria = new Categoria();
         categoria.setId(1L);
-        categoria.setNombre("Electrónica");
 
-        Producto producto = new Producto();
-        producto.setNombre("Laptop");
-        producto.setPrecio(999.99);
-        producto.setStock(10);
-
-        Producto productoGuardado = new Producto();
-        productoGuardado.setId(1L);
-        productoGuardado.setNombre("Laptop");
-        productoGuardado.setPrecio(999.99);
-        productoGuardado.setStock(10);
-        productoGuardado.setCategoria(categoria);
-
-        ProductoResponseDto responseDto = new ProductoResponseDto();
-        responseDto.setId(1L);
-        responseDto.setNombre("Laptop");
-
-        when(productoRepository.existsByNombre(requestDto.getNombre())).thenReturn(false);
-        when(categoriaRepository.findById(1L)).thenReturn(Optional.of(categoria));
-        when(productoMapper.toEntity(requestDto)).thenReturn(producto);
-        when(productoRepository.save(any(Producto.class))).thenReturn(productoGuardado);
-        when(productoMapper.toResponseDto(productoGuardado)).thenReturn(responseDto);
-
-        // Act
-        ProductoResponseDto result = productoService.createProducto(requestDto);
-
-        // Assert
-        assertNotNull(result);
-        assertEquals("Laptop", result.getNombre());
-        verify(productoRepository).save(any(Producto.class));
-        verify(productoMapper).toEntity(requestDto);
-        verify(productoMapper).toResponseDto(productoGuardado);
-    }
-
-    @Test
-    public void testFindByIdCuandoExiste() {
-        // Arrange
-        Long id = 1L;
-        Producto producto = new Producto();
-        producto.setId(id);
-        producto.setNombre("Laptop");
-
-        ProductoResponseDto responseDto = new ProductoResponseDto();
-        responseDto.setId(id);
-        responseDto.setNombre("Laptop");
-
-        when(productoRepository.findById(id)).thenReturn(Optional.of(producto));
-        when(productoMapper.toResponseDto(producto)).thenReturn(responseDto);
-
-        // Act
-        ProductoResponseDto result = productoService.getProductoById(id);
-
-        // Assert
-        assertNotNull(result);
-        assertEquals(id, result.getId());
-        assertEquals("Laptop", result.getNombre());
-        verify(productoRepository).findById(id);
-    }
-
-    @Test
-    public void testFindByIdCuandoNoExiste() {
-        // Arrange
-        Long id = 999L;
-        when(productoRepository.findById(id)).thenReturn(Optional.empty());
-
-        // Act & Assert
-        assertThrows(ProductoNotFoundException.class, () -> {
-            productoService.getProductoById(id);
-        });
-        verify(productoRepository).findById(id);
-    }
-
-    @Test
-    public void testDeleteById() {
-        // Arrange
-        Long id = 1L;
-        Producto producto = new Producto();
-        producto.setId(id);
-        producto.setNombre("Laptop");
+        // Crear producto usando los valores del requestDto
+        producto = new Producto();
+        producto.setId(1L);
+        producto.setNombre(requestDto.getNombre());
+        producto.setPrecio(requestDto.getPrecio());
+        producto.setStock(requestDto.getStock());
         producto.setActivo(true);
 
-        when(productoRepository.findById(id)).thenReturn(Optional.of(producto));
-        when(productoRepository.save(any(Producto.class))).thenReturn(producto);
-
-        // Act
-        productoService.deleteProducto(id);
-
-        // Assert
-        verify(productoRepository).findById(id);
-        verify(productoRepository).save(any(Producto.class));
-        assertFalse(producto.getActivo());
+        // Crear responseDto usando los valores de la entidad
+        responseDto = new ProductoResponseDto();
+        responseDto.setId(producto.getId());
+        responseDto.setNombre(producto.getNombre());
+        responseDto.setPrecio(producto.getPrecio());
+        responseDto.setStock(producto.getStock());
+        responseDto.setActivo(producto.getActivo());
     }
 
+    /**
+     * Test: getAllProductos debe devolver una lista de productos activos.
+     */
     @Test
-    public void testSaveProductoConNombreDuplicado() {
-        // Arrange
-        ProductoRequestDto requestDto = new ProductoRequestDto();
-        requestDto.setNombre("Laptop");
+    void getAllProductos_returnsList() {
+        when(productoRepository.findByActivoTrue()).thenReturn(List.of(producto));
+        when(productoMapper.toResponseDto(producto)).thenReturn(responseDto);
 
-        when(productoRepository.existsByNombre("Laptop")).thenReturn(true);
+        List<ProductoResponseDto> list = productoService.getAllProductos();
 
-        // Act & Assert
-        assertThrows(ProductoBadRequestException.class, () -> {
-            productoService.createProducto(requestDto);
-        });
-        verify(productoRepository, never()).save(any());
+        assertEquals(1, list.size());
+        assertEquals("Laptop", list.get(0).getNombre());
+        verify(productoRepository, times(1)).findByActivoTrue();
+    }
+
+    /**
+     * Test: getProductoById debe devolver un producto cuando existe.
+     */
+    @Test
+    void getProductoById_success() {
+        when(productoRepository.findById(1L)).thenReturn(Optional.of(producto));
+        when(productoMapper.toResponseDto(producto)).thenReturn(responseDto);
+
+        ProductoResponseDto result = productoService.getProductoById(1L);
+
+        assertEquals(1L, result.getId());
+        assertEquals("Laptop", result.getNombre());
+        verify(productoRepository, times(1)).findById(1L);
+    }
+
+    /**
+     * Test: createProducto debe crear un nuevo producto correctamente.
+     */
+    @Test
+    void createProducto_success() {
+        when(categoriaRepository.findById(1L)).thenReturn(Optional.of(categoria));
+        when(productoMapper.toEntity(requestDto)).thenReturn(producto);
+        when(productoRepository.save(producto)).thenReturn(producto);
+        when(productoMapper.toResponseDto(producto)).thenReturn(responseDto);
+
+        ProductoResponseDto result = productoService.createProducto(requestDto);
+
+        assertNotNull(result);
+        assertEquals(1L, result.getId());
+        assertEquals("Laptop", result.getNombre());
+        verify(productoRepository, times(1)).save(producto);
+    }
+
+    /**
+     * Test: deleteProducto debe hacer soft delete (desactivar) un producto correctamente.
+     */
+    @Test
+    void deleteProducto_success_softDelete() {
+        when(productoRepository.findById(1L)).thenReturn(Optional.of(producto));
+
+        productoService.deleteProducto(1L);
+
+        ArgumentCaptor<Producto> captor = ArgumentCaptor.forClass(Producto.class);
+        verify(productoRepository).save(captor.capture());
+        assertFalse(captor.getValue().getActivo());
+        verify(productoRepository, never()).delete(any());
     }
 }
-

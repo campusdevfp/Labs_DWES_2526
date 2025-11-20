@@ -10,8 +10,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -21,9 +21,12 @@ public class UsuarioService {
     private final UsuarioRepository usuarioRepository;
 
     public List<UsuarioResponseDto> findAll() {
-        return usuarioRepository.findAll().stream()
-                .map(this::toResponseDto)
-                .collect(Collectors.toList());
+        List<Usuario> usuarios = usuarioRepository.findAll();
+        List<UsuarioResponseDto> resultado = new ArrayList<>();
+        for (Usuario usuario : usuarios) {
+            resultado.add(toResponseDto(usuario));
+        }
+        return resultado;
     }
 
     public UsuarioResponseDto findById(Long id) {

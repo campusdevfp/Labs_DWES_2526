@@ -1,0 +1,219 @@
+{
+  "info": {
+    "name": "Usuario API Collection",
+    "_postman_id": "12345678-1234-1234-1234-123456789012",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Get All Usuarios",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/usuarios",
+          "host": ["{{base_url}}"],
+          "path": ["api", "usuarios"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Response is an array\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.be.an('array');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Create Usuario",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"username\": \"testuser\", \"email\": \"test@example.com\"}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/usuarios",
+          "host": ["{{base_url}}"],
+          "path": ["api", "usuarios"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 201\", function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "pm.test(\"Response has id\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.id).to.be.a('number');",
+              "});",
+              "pm.environment.set(\"usuario_id\", jsonData.id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Get Usuario by ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/usuarios/{{usuario_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "usuarios", "{{usuario_id}}"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Response has correct id\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.id).to.eql(pm.environment.get(\"usuario_id\"));",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Update Usuario",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"username\": \"updateduser\", \"email\": \"updated@example.com\"}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/usuarios/{{usuario_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "usuarios", "{{usuario_id}}"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Username updated\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.username).to.eql(\"updateduser\");",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Deactivate Usuario",
+      "request": {
+        "method": "PATCH",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/usuarios/{{usuario_id}}/desactivar",
+          "host": ["{{base_url}}"],
+          "path": ["api", "usuarios", "{{usuario_id}}", "desactivar"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 204\", function () {",
+              "    pm.response.to.have.status(204);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Delete Usuario",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/usuarios/{{usuario_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "usuarios", "{{usuario_id}}"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 204\", function () {",
+              "    pm.response.to.have.status(204);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Get Usuario by ID (Not Found)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/usuarios/999",
+          "host": ["{{base_url}}"],
+          "path": ["api", "usuarios", "999"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 404\", function () {",
+              "    pm.response.to.have.status(404);",
+              "});"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080"
+    }
+  ]
+}
+

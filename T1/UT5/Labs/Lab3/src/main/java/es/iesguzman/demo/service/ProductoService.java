@@ -9,8 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -20,9 +20,12 @@ public class ProductoService {
     private final ProductoRepository productoRepository;
 
     public List<ProductoResponseDto> findAll() {
-        return productoRepository.findAll().stream()
-                .map(this::toResponseDto)
-                .collect(Collectors.toList());
+        List<Producto> productos = productoRepository.findAll();
+        List<ProductoResponseDto> resultado = new ArrayList<>();
+        for (Producto producto : productos) {
+            resultado.add(toResponseDto(producto));
+        }
+        return resultado;
     }
 
     public ProductoResponseDto findById(Long id) {
@@ -32,15 +35,21 @@ public class ProductoService {
     }
 
     public List<ProductoResponseDto> findByCategoria(String categoria) {
-        return productoRepository.findByCategoria(categoria).stream()
-                .map(this::toResponseDto)
-                .collect(Collectors.toList());
+        List<Producto> productos = productoRepository.findByCategoria(categoria);
+        List<ProductoResponseDto> resultado = new ArrayList<>();
+        for (Producto producto : productos) {
+            resultado.add(toResponseDto(producto));
+        }
+        return resultado;
     }
 
     public List<ProductoResponseDto> findByNombre(String nombre) {
-        return productoRepository.findByNombreContainingIgnoreCase(nombre).stream()
-                .map(this::toResponseDto)
-                .collect(Collectors.toList());
+        List<Producto> productos = productoRepository.findByNombreContainingIgnoreCase(nombre);
+        List<ProductoResponseDto> resultado = new ArrayList<>();
+        for (Producto producto : productos) {
+            resultado.add(toResponseDto(producto));
+        }
+        return resultado;
     }
 
     public ProductoResponseDto save(ProductoRequestDto dto) {

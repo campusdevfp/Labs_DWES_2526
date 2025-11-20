@@ -56,3 +56,6 @@ CREATE TABLE IF NOT EXISTS usuarios (
 INSERT INTO usuarios (username, email) VALUES
 ('usuario1', 'usuario1@example.com'),
 ('usuario2', 'usuario2@example.com');
+
+GRANT ALL PRIVILEGES ON ecommerce_db.* TO 'ecommerce'@'%';
+FLUSH PRIVILEGES;

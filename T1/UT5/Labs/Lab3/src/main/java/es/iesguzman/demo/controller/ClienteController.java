@@ -6,21 +6,21 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-import es.iesguzman.demo.model.Cliente;
-import es.iesguzman.demo.repository.ClienteRepository;
+import es.iesguzman.demo.model.Usuario  ;
+import es.iesguzman.demo.repository.UsuarioRepository;
 
 @RestController
 @RequestMapping("/api/clientes")
 public class ClienteController {
 
-    private final ClienteRepository clienteRepository;
+    private final UsuarioRepository clienteRepository;
 
-    public ClienteController(ClienteRepository clienteRepository) {
-        this.clienteRepository = clienteRepository;
+    public ClienteController(UsuarioRepository usuarioRepository) {
+        this.clienteRepository = usuarioRepository;
     }
 
     @GetMapping
-    public List<Cliente> listarClientes() {
+    public List<Usuario> listarClientes() {
         return clienteRepository.findAll();
     }
 }

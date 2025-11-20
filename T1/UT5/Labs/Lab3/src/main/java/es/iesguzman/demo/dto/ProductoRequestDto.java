@@ -2,6 +2,7 @@ package es.iesguzman.demo.dto;
 
 import jakarta.validation.constraints.*;
 import lombok.Data;
+import org.hibernate.validator.constraints.URL;
 
 @Data
 public class ProductoRequestDto {

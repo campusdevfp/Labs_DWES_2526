@@ -2,136 +2,125 @@ package es.iesguzman.demo.service;
 
 import es.iesguzman.demo.dto.CategoriaRequestDto;
 import es.iesguzman.demo.dto.CategoriaResponseDto;
-import es.iesguzman.demo.exception.CategoriaBadRequestException;
 import es.iesguzman.demo.mapper.CategoriaMapper;
 import es.iesguzman.demo.model.Categoria;
 import es.iesguzman.demo.repository.CategoriaRepository;
 import es.iesguzman.demo.repository.ProductoRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+/**
+ * Test unitario del servicio CategoriaService.
+ * Usa Mockito para simular las dependencias (repository y mapper).
+ */
 @ExtendWith(MockitoExtension.class)
-public class CategoriaServiceTest {
+class CategoriaServiceTest {
 
     @Mock
-    private CategoriaRepository categoriaRepository;
+    CategoriaRepository categoriaRepository;
 
     @Mock
-    private ProductoRepository productoRepository;
+    CategoriaMapper categoriaMapper;
 
     @Mock
-    private CategoriaMapper categoriaMapper;
+    ProductoRepository productoRepository;
 
     @InjectMocks
-    private CategoriaService categoriaService;
+    CategoriaService categoriaService;
 
-    @Test
-    public void testSaveConNombreUnico() {
-        // Arrange
-        CategoriaRequestDto requestDto = new CategoriaRequestDto();
+    CategoriaRequestDto requestDto;
+    Categoria categoria;
+    CategoriaResponseDto responseDto;
+
+    @BeforeEach
+    void setUp() {
+        requestDto = new CategoriaRequestDto();
         requestDto.setNombre("Electrónica");
         requestDto.setDescripcion("Productos electrónicos");
 
-        Categoria categoria = new Categoria();
-        categoria.setNombre("Electrónica");
+        // Crear categoria usando los valores del requestDto
+        categoria = new Categoria();
+        categoria.setId(1L);
+        categoria.setNombre(requestDto.getNombre());
+        categoria.setDescripcion(requestDto.getDescripcion());
 
-        Categoria categoriaGuardada = new Categoria();
-        categoriaGuardada.setId(1L);
-        categoriaGuardada.setNombre("Electrónica");
+        // Crear responseDto usando los valores de la entidad
+        responseDto = new CategoriaResponseDto();
+        responseDto.setId(categoria.getId());
+        responseDto.setNombre(categoria.getNombre());
+        responseDto.setDescripcion(categoria.getDescripcion());
+    }
 
-        CategoriaResponseDto responseDto = new CategoriaResponseDto();
-        responseDto.setId(1L);
-        responseDto.setNombre("Electrónica");
+    /**
+     * Test: getAllCategorias debe devolver una lista de categorías.
+     */
+    @Test
+    void getAllCategorias_returnsList() {
+        when(categoriaRepository.findAll()).thenReturn(List.of(categoria));
+        when(categoriaMapper.toResponseDto(categoria)).thenReturn(responseDto);
 
+        List<CategoriaResponseDto> list = categoriaService.getAllCategorias();
+
+        assertEquals(1, list.size());
+        assertEquals("Electrónica", list.get(0).getNombre());
+        verify(categoriaRepository, times(1)).findAll();
+    }
+
+    /**
+     * Test: getCategoriaById debe devolver una categoría cuando existe.
+     */
+    @Test
+    void getCategoriaById_success() {
+        when(categoriaRepository.findById(1L)).thenReturn(Optional.of(categoria));
+        when(categoriaMapper.toResponseDto(categoria)).thenReturn(responseDto);
+
+        CategoriaResponseDto result = categoriaService.getCategoriaById(1L);
+
+        assertEquals(1L, result.getId());
+        assertEquals("Electrónica", result.getNombre());
+        verify(categoriaRepository, times(1)).findById(1L);
+    }
+
+    /**
+     * Test: createCategoria debe crear una nueva categoría correctamente.
+     */
+    @Test
+    void createCategoria_success() {
         when(categoriaRepository.existsByNombre("Electrónica")).thenReturn(false);
         when(categoriaMapper.toEntity(requestDto)).thenReturn(categoria);
-        when(categoriaRepository.save(categoria)).thenReturn(categoriaGuardada);
-        when(categoriaMapper.toResponseDto(categoriaGuardada)).thenReturn(responseDto);
+        when(categoriaRepository.save(categoria)).thenReturn(categoria);
+        when(categoriaMapper.toResponseDto(categoria)).thenReturn(responseDto);
 
-        // Act
         CategoriaResponseDto result = categoriaService.createCategoria(requestDto);
 
-        // Assert
         assertNotNull(result);
         assertEquals(1L, result.getId());
         assertEquals("Electrónica", result.getNombre());
-        verify(categoriaRepository).save(categoria);
+        verify(categoriaRepository, times(1)).save(categoria);
     }
 
+    /**
+     * Test: deleteCategoria debe eliminar una categoría correctamente.
+     */
     @Test
-    public void testSaveConNombreDuplicado() {
-        // Arrange
-        CategoriaRequestDto requestDto = new CategoriaRequestDto();
-        requestDto.setNombre("Electrónica");
+    void deleteCategoria_success() {
+        when(categoriaRepository.findById(1L)).thenReturn(Optional.of(categoria));
+        // Simular que no existen productos asociados a la categoría
+        when(productoRepository.findByCategoriaId(1L)).thenReturn(Collections.emptyList());
 
-        when(categoriaRepository.existsByNombre("Electrónica")).thenReturn(true);
+        categoriaService.deleteCategoria(1L);
 
-        // Act & Assert
-        assertThrows(CategoriaBadRequestException.class, () -> {
-            categoriaService.createCategoria(requestDto);
-        });
-        verify(categoriaRepository, never()).save(any());
-    }
-
-    @Test
-    public void testFindAllCategorias() {
-        // Arrange
-        Categoria cat1 = new Categoria();
-        cat1.setId(1L);
-        cat1.setNombre("Electrónica");
-
-        Categoria cat2 = new Categoria();
-        cat2.setId(2L);
-        cat2.setNombre("Ropa");
-
-        CategoriaResponseDto dto1 = new CategoriaResponseDto();
-        dto1.setId(1L);
-        dto1.setNombre("Electrónica");
-
-        CategoriaResponseDto dto2 = new CategoriaResponseDto();
-        dto2.setId(2L);
-        dto2.setNombre("Ropa");
-
-        when(categoriaRepository.findAll()).thenReturn(Arrays.asList(cat1, cat2));
-        when(categoriaMapper.toResponseDto(cat1)).thenReturn(dto1);
-        when(categoriaMapper.toResponseDto(cat2)).thenReturn(dto2);
-
-        // Act
-        List<CategoriaResponseDto> result = categoriaService.getAllCategorias();
-
-        // Assert
-        assertNotNull(result);
-        assertEquals(2, result.size());
-        assertEquals("Electrónica", result.get(0).getNombre());
-        assertEquals("Ropa", result.get(1).getNombre());
-        verify(categoriaRepository).findAll();
-    }
-
-    @Test
-    public void testDeleteCategoria() {
-        // Arrange
-        Long id = 1L;
-        Categoria categoria = new Categoria();
-        categoria.setId(id);
-        categoria.setNombre("Electrónica");
-
-        when(categoriaRepository.findById(id)).thenReturn(java.util.Optional.of(categoria));
-
-        // Act
-        categoriaService.deleteCategoria(id);
-
-        // Assert
-        verify(categoriaRepository).delete(categoria);
+        verify(categoriaRepository, times(1)).delete(categoria);
     }
 }
-

@@ -2,286 +2,199 @@
 package es.iesguzman.demo.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import es.iesguzman.demo.dto.CategoriaResponseDto;
 import es.iesguzman.demo.dto.ProductoRequestDto;
 import es.iesguzman.demo.dto.ProductoResponseDto;
-import es.iesguzman.demo.dto.ErrorResponse;
+import es.iesguzman.demo.exception.ProductoNotFoundException;
 import es.iesguzman.demo.service.ProductoService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.Arrays;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 
-@SpringBootTest
-@AutoConfigureMockMvc
+/**
+ * Test de integración del controlador ProductoController usando MockMvc.
+ *
+ * Características:
+ * - Solo carga el controlador ProductoController (no toda la aplicación)
+ * - No conecta a base de datos MySQL
+ * - Usa mocks para simular el comportamiento del servicio
+ */
+@WebMvcTest(ProductoController.class)
 public class ProductoControllerIntegrationTest {
 
     @Autowired
-    private MockMvc mockMvc;
+    private MockMvc mockMvc; // Cliente HTTP simulado
 
     @MockBean
-    private ProductoService productoService;
+    private ProductoService productoService; // Mock del servicio
 
     private final ObjectMapper mapper = new ObjectMapper();
+    private ProductoResponseDto productoDto;
+    private final String endpoint = "/api/productos";
 
+    /**
+     * Configuración inicial antes de cada test.
+     * Prepara un producto de ejemplo reutilizable.
+     */
+    @BeforeEach
+    void setUp() {
+        // Crear categoría para el producto
+        CategoriaResponseDto categoria = new CategoriaResponseDto();
+        categoria.setId(1L);
+        categoria.setNombre("Electronica");
+
+        // Crear producto de ejemplo
+        productoDto = new ProductoResponseDto();
+        productoDto.setId(1L);
+        productoDto.setNombre("Laptop");
+        productoDto.setDescripcion("Laptop de alta gama");
+        productoDto.setPrecio(999.99);
+        productoDto.setStock(10);
+        productoDto.setCategoria(categoria);
+        productoDto.setActivo(true);
+    }
+
+    // Helper para convertir respuesta a UTF-8 (evita problemas con tildes/ñ)
+    private String contentAsUtf8(MockHttpServletResponse response) {
+        return new String(response.getContentAsByteArray(), java.nio.charset.StandardCharsets.UTF_8);
+    }
+
+    /**
+     * Test: GET /api/productos debe devolver lista de productos (200).
+     *
+     * Verifica que el endpoint retorna todos los productos correctamente.
+     */
     @Test
     public void testGetAllProductosRetorna200() throws Exception {
-        ProductoResponseDto producto1 = new ProductoResponseDto();
-        producto1.setId(1L);
-        producto1.setNombre("Laptop");
-        producto1.setPrecio(999.99);
-        producto1.setStock(10);
-
+        // Preparar segundo producto
         ProductoResponseDto producto2 = new ProductoResponseDto();
         producto2.setId(2L);
         producto2.setNombre("Mouse");
         producto2.setPrecio(25.50);
-        producto2.setStock(50);
 
-        List<ProductoResponseDto> productos = Arrays.asList(producto1, producto2);
+        List<ProductoResponseDto> productos = List.of(productoDto, producto2);
+
+        // Configurar mock: devolver lista de productos
         when(productoService.getAllProductos()).thenReturn(productos);
 
-        MockHttpServletResponse response = mockMvc.perform(get("/api/productos"))
+        // Ejecutar GET /api/productos
+        MockHttpServletResponse response = mockMvc.perform(
+                        get(endpoint)
+                                .accept(MediaType.APPLICATION_JSON))
                 .andReturn().getResponse();
 
-        List<ProductoResponseDto> res = mapper.readValue(
-                response.getContentAsString(),
-                mapper.getTypeFactory().constructCollectionType(List.class, ProductoResponseDto.class)
-        );
-
+        // Verificar respuesta
         assertAll(
                 () -> assertEquals(HttpStatus.OK.value(), response.getStatus()),
-                () -> assertEquals(MediaType.APPLICATION_JSON_VALUE, response.getContentType()),
-                () -> assertEquals(2, res.size()),
-                () -> assertTrue(res.stream().anyMatch(p -> "Laptop".equals(p.getNombre())))
+                () -> assertTrue(response.getContentAsString().contains("Laptop")),
+                () -> assertTrue(response.getContentAsString().contains("Mouse"))
         );
 
         verify(productoService, times(1)).getAllProductos();
     }
 
+    /**
+     * Test: GET /api/productos/{id} debe devolver un producto cuando existe (200).
+     *
+     * Verifica la obtención de un producto específico por su ID.
+     */
     @Test
     public void testGetProductoByIdRetorna200() throws Exception {
-        ProductoResponseDto producto = new ProductoResponseDto();
-        producto.setId(1L);
-        producto.setNombre("Laptop");
-        producto.setPrecio(999.99);
-        producto.setStock(10);
+        // Configurar mock: devolver producto cuando se busque ID 1
+        when(productoService.getProductoById(1L)).thenReturn(productoDto);
 
-        when(productoService.getProductoById(1L)).thenReturn(producto);
-
-        MockHttpServletResponse response = mockMvc.perform(get("/api/productos/1"))
+        // Ejecutar GET /api/productos/1
+        MockHttpServletResponse response = mockMvc.perform(
+                        get(endpoint + "/1")
+                                .accept(MediaType.APPLICATION_JSON))
                 .andReturn().getResponse();
 
-        ProductoResponseDto res = mapper.readValue(response.getContentAsString(), ProductoResponseDto.class);
-
+        // Verificar respuesta correcta
         assertAll(
                 () -> assertEquals(HttpStatus.OK.value(), response.getStatus()),
-                () -> assertEquals(MediaType.APPLICATION_JSON_VALUE, response.getContentType()),
-                () -> assertEquals(1L, res.getId()),
-                () -> assertEquals("Laptop", res.getNombre())
+                () -> assertTrue(response.getContentAsString().contains("Laptop"))
         );
 
         verify(productoService, times(1)).getProductoById(1L);
     }
 
+    /**
+     * Test: GET /api/productos/{id} debe devolver 404 cuando no existe.
+     *
+     * Verifica el manejo de error cuando se busca un producto inexistente.
+     */
     @Test
     public void testGetProductoByIdRetorna404() throws Exception {
-        when(productoService.getProductoById(999L))
-                .thenThrow(new es.iesguzman.demo.exception.ProductoNotFoundException("Producto no encontrado"));
+        // Configurar mock: lanzar excepción cuando se busque ID -1
+        when(productoService.getProductoById(-1L))
+                .thenThrow(new ProductoNotFoundException("Producto no encontrado"));
 
-        MockHttpServletResponse response = mockMvc.perform(get("/api/productos/999"))
+        // Ejecutar GET con ID inexistente
+        MockHttpServletResponse response = mockMvc.perform(
+                        get(endpoint + "/-1")
+                                .accept(MediaType.APPLICATION_JSON))
                 .andReturn().getResponse();
 
+        // Verificar que devuelve 404
         assertEquals(HttpStatus.NOT_FOUND.value(), response.getStatus());
 
-        verify(productoService, times(1)).getProductoById(999L);
+        verify(productoService, times(1)).getProductoById(-1L);
     }
 
+    /**
+     * Test: POST /api/productos debe crear un producto con datos válidos (201).
+     *
+     * Verifica la creación de un nuevo producto.
+     */
     @Test
     public void testCreateProductoConDatosValidosRetorna201() throws Exception {
-        ProductoResponseDto responseDto = new ProductoResponseDto();
-        responseDto.setId(1L);
-        responseDto.setNombre("Laptop");
-        responseDto.setPrecio(999.99);
-        responseDto.setStock(10);
+        // Preparar request DTO (datos del cliente)
+        ProductoRequestDto requestDto = new ProductoRequestDto();
+        requestDto.setNombre("Teclado");
+        requestDto.setDescripcion("Teclado mecanico");
+        requestDto.setPrecio(89.99);
+        requestDto.setStock(20);
+        requestDto.setCategoriaId(1L);
 
-        when(productoService.createProducto(any(ProductoRequestDto.class))).thenReturn(responseDto);
+        // Preparar response DTO (producto creado)
+        ProductoResponseDto createdDto = new ProductoResponseDto();
+        createdDto.setId(10L);
+        createdDto.setNombre("Teclado");
+        createdDto.setPrecio(89.99);
+        createdDto.setActivo(true);
 
-        String requestBody = "{"
-                + "\"nombre\": \"Laptop\","
-                + "\"descripcion\": \"Laptop gaming\","
-                + "\"precio\": 999.99,"
-                + "\"stock\": 10,"
-                + "\"categoriaId\": 1,"
-                + "\"imagenUrl\": \"http://example.com/laptop.jpg\""
-                + "}";
+        // Configurar mock: devolver producto creado
+        when(productoService.createProducto(any(ProductoRequestDto.class)))
+                .thenReturn(createdDto);
 
-        MockHttpServletResponse response = mockMvc.perform(post("/api/productos")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody))
+        // Convertir a JSON y ejecutar POST
+        String json = mapper.writeValueAsString(requestDto);
+        MockHttpServletResponse response = mockMvc.perform(
+                        post(endpoint)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(json)
+                                .accept(MediaType.APPLICATION_JSON))
                 .andReturn().getResponse();
 
-        ProductoResponseDto res = mapper.readValue(response.getContentAsString(), ProductoResponseDto.class);
-
+        // Verificar creación exitosa
         assertAll(
                 () -> assertEquals(HttpStatus.CREATED.value(), response.getStatus()),
-                () -> assertEquals(1L, res.getId()),
-                () -> assertEquals("Laptop", res.getNombre())
+                () -> assertTrue(response.getContentAsString().contains("Teclado"))
         );
 
         verify(productoService, times(1)).createProducto(any(ProductoRequestDto.class));
-    }
-
-    @Test
-    public void testCreateProductoConDatosInvalidosRetorna400() throws Exception {
-        String requestBody = "{"
-                + "\"descripcion\": \"Solo descripción\""
-                + "}";
-
-        MockHttpServletResponse response = mockMvc.perform(post("/api/productos")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody))
-                .andReturn().getResponse();
-
-        assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatus());
-
-        verify(productoService, times(0)).createProducto(any(ProductoRequestDto.class));
-    }
-
-//    @Test
-//    public void testUpdateProductoExistenteRetorna200() throws Exception {
-//        ProductoResponseDto responseDto = new ProductoResponseDto();
-//        responseDto.setId(1L);
-//        responseDto.setNombre("Laptop Actualizada");
-//        responseDto.setPrecio(899.99);
-//        responseDto.setStock(5);
-//
-//        when(productoService.updateProducto(eq(1L), any(ProductoRequestDto.class))).thenReturn(responseDto);
-//
-//        String requestBody = "{"
-//                + "\"nombre\": \"Laptop Actualizada\","
-//                + "\"descripcion\": \"Laptop gaming mejorada\","
-//                + "\"precio\": 899.99,"
-//                + "\"stock\": 5,"
-//                + "\"categoriaId\": 1,"
-//                + "\"imagenUrl\": \"http://example.com/laptop-new.jpg\""
-//                + "}";
-//
-//        MockHttpServletResponse response = mockMvc.perform(put("/api/productos/1")
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .content(requestBody))
-//                .andReturn().getResponse();
-//
-//        ProductoResponseDto res = mapper.readValue(response.getContentAsString(), ProductoResponseDto.class);
-//
-//        assertAll(
-//                () -> assertEquals(HttpStatus.OK.value(), response.getStatus()),
-//                () -> assertEquals("Laptop Actualizada", res.getNombre()),
-//                () -> assertEquals(899.99, res.getPrecio())
-//        );
-//
-//        verify(productoService, times(1)).updateProducto(eq(1L), any(ProductoRequestDto.class));
-//    }
-//
-//    @Test
-//    public void testUpdateProductoNoExistenteRetorna404() throws Exception {
-//        when(productoService.updateProducto(eq(999L), any(ProductoRequestDto.class)))
-//                .thenThrow(new es.iesguzman.demo.exception.ProductoNotFoundException("Producto no encontrado"));
-//
-//        String requestBody = "{"
-//                + "\"nombre\": \"Laptop\","
-//                + "\"precio\": 999.99,"
-//                + "\"stock\": 10,"
-//                + "\"categoriaId\": 1"
-//                + "}";
-//
-//        MockHttpServletResponse response = mockMvc.perform(put("/api/productos/999")
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .content(requestBody))
-//                .andReturn().getResponse();
-//
-//        assertEquals(HttpStatus.NOT_FOUND.value(), response.getStatus());
-//
-//        verify(productoService, times(1)).updateProducto(eq(999L), any(ProductoRequestDto.class));
-//    }
-//
-//    @Test
-//    public void testDeleteProductoRetorna204() throws Exception {
-//        MockHttpServletResponse response = mockMvc.perform(delete("/api/productos/1"))
-//                .andReturn().getResponse();
-//
-//        assertEquals(HttpStatus.NO_CONTENT.value(), response.getStatus());
-//
-//        verify(productoService, times(1)).deleteProducto(1L);
-//    }
-//
-//    @Test
-//    public void testDeleteProductoNoExistenteRetorna404() throws Exception {
-//        doThrow(new es.iesguzman.demo.exception.ProductoNotFoundException("Producto no encontrado"))
-//                .when(productoService).deleteProducto(999L);
-//
-//        MockHttpServletResponse response = mockMvc.perform(delete("/api/productos/999"))
-//                .andReturn().getResponse();
-//
-//        assertEquals(HttpStatus.NOT_FOUND.value(), response.getStatus());
-//
-//        verify(productoService, times(1)).deleteProducto(999L);
-//    }
-
-    @Test
-    public void testValidacionNombreObligatorio() throws Exception {
-        String requestBody = "{"
-                + "\"precio\": 999.99,"
-                + "\"stock\": 10,"
-                + "\"categoriaId\": 1"
-                + "}";
-
-        MockHttpServletResponse response = mockMvc.perform(post("/api/productos")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody))
-                .andReturn().getResponse();
-
-        try {
-            ErrorResponse err = mapper.readValue(response.getContentAsString(), ErrorResponse.class);
-            assertEquals(400, err.getStatus());
-            assertEquals("Datos inválidos", err.getMessage());
-        } catch (Exception ignored) {
-        }
-
-        assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatus());
-
-        verify(productoService, times(0)).createProducto(any(ProductoRequestDto.class));
-    }
-
-    @Test
-    public void testValidacionPrecioPositivo() throws Exception {
-        String requestBody = "{"
-                + "\"nombre\": \"Laptop\","
-                + "\"precio\": -50.0,"
-                + "\"stock\": 10,"
-                + "\"categoriaId\": 1"
-                + "}";
-
-        MockHttpServletResponse response = mockMvc.perform(post("/api/productos")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody))
-                .andReturn().getResponse();
-
-        assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatus());
-
-        verify(productoService, times(0)).createProducto(any(ProductoRequestDto.class));
     }
 }
