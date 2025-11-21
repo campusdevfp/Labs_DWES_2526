@@ -4,7 +4,6 @@ import es.iesguzman.demo.dto.ProductoRequestDto;
 import es.iesguzman.demo.dto.ProductoResponseDto;
 import es.iesguzman.demo.model.Categoria;
 import es.iesguzman.demo.model.Producto;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -27,6 +26,16 @@ public class ProductoMapperTest {
 
     @Test
     public void testToEntity() {
+        /*
+         En el método testToEntity, no se utiliza 'when' porque el método toEntity del mapper
+         no invoca ningún servicio o dependencia mockeada (como categoriaMapper). Simplemente
+         crea y asigna valores directamente desde el DTO a la entidad Producto, sin llamadas a
+         métodos externos que requieran simulación con Mockito. Por eso, no hay necesidad de
+         configurar comportamientos mockeados. En contraste, testToResponseDto sí usa 'when'
+         porque llama a categoriaMapper.toResponseDto, que debe ser mockeado para evitar
+         dependencias reales.
+        */
+
         // Arrange
         ProductoRequestDto dto = new ProductoRequestDto();
         dto.setNombre("Laptop");
@@ -85,4 +94,3 @@ public class ProductoMapperTest {
         verify(categoriaMapper).toResponseDto(categoria);
     }
 }
-

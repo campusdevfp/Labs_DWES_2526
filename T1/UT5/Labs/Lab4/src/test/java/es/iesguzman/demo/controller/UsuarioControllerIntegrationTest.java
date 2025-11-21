@@ -41,6 +41,8 @@ public class UsuarioControllerIntegrationTest {
 
     private final ObjectMapper mapper = new ObjectMapper();
     private UsuarioResponseDto usuarioDto;
+    private UsuarioRequestDto requestDto;
+    private UsuarioResponseDto createdDto;
     private final String endpoint = "/api/usuarios";
 
     /**
@@ -54,6 +56,17 @@ public class UsuarioControllerIntegrationTest {
         usuarioDto.setEmail("usuario1@example.com");
         usuarioDto.setFechaCreacion(LocalDateTime.now());
         usuarioDto.setActivo(true);
+
+        requestDto = new UsuarioRequestDto();
+        requestDto.setUsername("nuevoUsuario");
+        requestDto.setEmail("nuevo@example.com");
+
+        createdDto = new UsuarioResponseDto();
+        createdDto.setId(10L);
+        createdDto.setUsername("nuevoUsuario");
+        createdDto.setEmail("nuevo@example.com");
+        createdDto.setFechaCreacion(LocalDateTime.now());
+        createdDto.setActivo(true);
     }
 
     /**
@@ -139,18 +152,6 @@ public class UsuarioControllerIntegrationTest {
      */
     @Test
     public void testCreateUsuario() throws Exception {
-        // Preparar DTOs
-        UsuarioRequestDto requestDto = new UsuarioRequestDto();
-        requestDto.setUsername("nuevoUsuario");
-        requestDto.setEmail("nuevo@example.com");
-
-        UsuarioResponseDto createdDto = new UsuarioResponseDto();
-        createdDto.setId(10L);
-        createdDto.setUsername("nuevoUsuario");
-        createdDto.setEmail("nuevo@example.com");
-        createdDto.setFechaCreacion(LocalDateTime.now());
-        createdDto.setActivo(true);
-
         // Configurar mock
         when(usuarioService.createUsuario(any(UsuarioRequestDto.class))).thenReturn(createdDto);
 
