@@ -131,7 +131,9 @@ public class SecurityConfig {
 | `/publico/*` | Un nivel | `/publico/saludo` ✅, `/publico/a/b` ❌ |
 | `/publico/**` | Cualquier nivel | `/publico/saludo` ✅, `/publico/a/b` ✅ |
 
-### 2️⃣ UserEntity.java
+### 2️⃣ UserEntity.java [no implementado por ahora]
+
+Esta Entidad no la vamos a implementar en este ejemplo, pero es importante entender su estructura.
 
 ```java
 @Entity                    // Es una entidad JPA (se guarda en BD)
@@ -153,7 +155,10 @@ public class UserEntity {
 }
 ```
 
-### 3️⃣ DbUserDetailsService.java
+### 3️⃣ DbUserDetailsService.java [no implementado por ahora]
+
+- Este servicio no lo vamos a usar por ahora, pero lo usaremos después pues es el 
+encargado de verificar si existe el usuario en la BD.
 
 ```java
 @Service
