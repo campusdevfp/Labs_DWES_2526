@@ -1,6 +1,6 @@
-# 🔐 Spring Security con H2 - Guía Didáctica
+#  Spring Security con H2 - Autenticación Básica
 
-## 📚 Índice
+##  Índice
 1. [Introducción](#introducción)
 2. [Estructura del Proyecto](#estructura-del-proyecto)
 3. [Conceptos Clave](#conceptos-clave)
@@ -49,7 +49,7 @@ src/main/java/com/example/demo/
 
 ## Conceptos Clave
 
-### 🔑 Autenticación vs Autorización
+###  Autenticación vs Autorización
 
 | Concepto | Pregunta que responde | Ejemplo |
 |----------|----------------------|---------|
@@ -77,7 +77,7 @@ src/main/java/com/example/demo/
 4. Compara contraseña enviada con la almacenada (BCrypt)
 5. Si es correcta → permite acceso según el rol
 
-### 🔒 BCrypt: Encriptación de Contraseñas
+###  BCrypt: Encriptación de Contraseñas
 
 ```
 Contraseña: "password"
@@ -94,7 +94,7 @@ Hash: "$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG"
 
 ## Explicación del Código
 
-### 1️⃣ SecurityConfig.java
+### SecurityConfig.java
 
 ```java
 @Configuration          // Esta clase contiene configuración de Spring
@@ -131,7 +131,7 @@ public class SecurityConfig {
 | `/publico/*` | Un nivel | `/publico/saludo` ✅, `/publico/a/b` ❌ |
 | `/publico/**` | Cualquier nivel | `/publico/saludo` ✅, `/publico/a/b` ✅ |
 
-### 2️⃣ UserEntity.java [no implementado por ahora]
+### UserEntity.java [no implementado por ahora]
 
 Esta Entidad no la vamos a implementar en este ejemplo, pero es importante entender su estructura.
 
@@ -155,7 +155,7 @@ public class UserEntity {
 }
 ```
 
-### 3️⃣ DbUserDetailsService.java [no implementado por ahora]
+### 3 DbUserDetailsService.java [no implementado por ahora]
 
 - Este servicio no lo vamos a usar por ahora, pero lo usaremos después pues es el 
 encargado de verificar si existe el usuario en la BD.
