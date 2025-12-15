@@ -90,6 +90,89 @@ Hash: "$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG"
 - ✅ Cada vez genera un hash diferente (usa "salt")
 - ✅ Es lento a propósito (dificulta ataques de fuerza bruta)
 
+### 🔐 ¿Quién comprueba la contraseña? (La "magia" de Spring Security)
+
+**Pregunta frecuente:** "¿Dónde está el `if` que comprueba si la contraseña es correcta?"
+
+**Respuesta:** Tú NO escribes ese `if`. Spring Security lo hace internamente mediante un componente llamado `DaoAuthenticationProvider`.
+
+#### Lo que tú configuras (en SecurityConfig.java):
+
+```java
+@Bean
+public UserDetailsManager userDetailsManager(DataSource dataSource) {
+    return new JdbcUserDetailsManager(dataSource);  // 👈 QUIÉN busca el usuario
+}
+
+@Bean
+public PasswordEncoder passwordEncoder() {
+    return new BCryptPasswordEncoder();  // 👈 CÓMO se comparan las contraseñas
+}
+```
+
+Estos dos `@Bean` son la clave. Spring Security los detecta automáticamente y los usa internamente.
+
+#### Lo que Spring hace por ti (código interno simplificado):
+
+```java
+// Esto ocurre DENTRO de Spring Security (DaoAuthenticationProvider)
+// Tú NO escribes esto, pero es lo que pasa "por detrás"
+
+public Authentication authenticate(Authentication auth) {
+    String username = auth.getName();                    // "admin"
+    String passwordEnviada = auth.getCredentials();      // "admin123"
+    
+    // 1️⃣ Usa TU UserDetailsManager para buscar el usuario
+    UserDetails user = userDetailsManager.loadUserByUsername(username);
+    
+    // 2️⃣ Usa TU PasswordEncoder para comparar contraseñas
+    String passwordEnBD = user.getPassword();  // "$2a$10$xyz..."
+    
+    if (!passwordEncoder.matches(passwordEnviada, passwordEnBD)) {
+        throw new BadCredentialsException("Contraseña incorrecta"); // ❌ 401
+    }
+    
+    // 3️⃣ Si llegamos aquí, el usuario está autenticado ✅
+    return new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+}
+```
+
+#### Diagrama del flujo completo:
+
+```
+┌────────────────────────────────────────────────────────────────────────────┐
+│                         FLUJO DE AUTENTICACIÓN                             │
+├────────────────────────────────────────────────────────────────────────────┤
+│                                                                            │
+│  Usuario envía: username="admin", password="admin123"                      │
+│                              │                                             │
+│                              ▼                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │            DaoAuthenticationProvider (SPRING SECURITY)              │   │
+│  │                                                                     │   │
+│  │   1. Llama a: userDetailsManager.loadUserByUsername("admin")        │   │
+│  │      └──▶ Busca en BD, devuelve UserDetails con password encriptada │   │
+│  │                                                                     │   │
+│  │   2. Llama a: passwordEncoder.matches("admin123", "$2a$10$...")     │   │
+│  │      └──▶ BCrypt compara la contraseña enviada con el hash          │   │
+│  │                                                                     │   │
+│  │   3. Si matches() == true  → Autenticación exitosa ✅               │   │
+│  │      Si matches() == false → 401 Unauthorized ❌                    │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                            │
+└────────────────────────────────────────────────────────────────────────────┘
+```
+
+#### Resumen: ¿Quién hace qué?
+
+| Componente | ¿Quién lo escribe? | ¿Qué hace? |
+|------------|-------------------|------------|
+| `UserDetailsManager` | **Tú** (como `@Bean`) | Busca usuario en BD |
+| `PasswordEncoder` | **Tú** (como `@Bean`) | Define algoritmo (BCrypt) |
+| `DaoAuthenticationProvider` | **Spring** (interno) | Orquesta todo y hace el `if` |
+
+**En resumen:** Tú solo configuras los "ingredientes" (`UserDetailsManager` y `PasswordEncoder`). Spring Security los "cocina" internamente para hacer la validación.
+
 ---
 
 ## Explicación del Código
@@ -126,10 +209,15 @@ public class SecurityConfig {
 ```
 
 **Patrones de URL:**
-| Patrón | Significado | Ejemplo |
-|--------|-------------|---------|
-| `/publico/*` | Un nivel | `/publico/saludo` ✅, `/publico/a/b` ❌ |
-| `/publico/**` | Cualquier nivel | `/publico/saludo` ✅, `/publico/a/b` ✅ |
+
+
+|            Patrón | Significado       | Ejemplo                               |
+|------------------:|:------------------|:--------------------------------------|
+|      `/publico/*` | Un nivel          | `/publico/saludo` ✅, `/publico/a/b` ❌ |
+|     `/publico/**` | Cualquier nivel   | `/publico/saludo` ✅, `/publico/a/b` ✅ |
+
+
+
 
 ### UserEntity.java [no implementado por ahora]
 
@@ -160,20 +248,118 @@ public class UserEntity {
 - Este servicio no lo vamos a usar por ahora, pero lo usaremos después pues es el 
 encargado de verificar si existe el usuario en la BD.
 
+#### ¿Qué es `UserDetails`?
+
+`UserDetails` es una **interfaz de Spring Security** que representa la información del usuario. Es el "contrato" que Spring Security usa para entender quién es el usuario.
+
+```java
+public interface UserDetails {
+    String getUsername();              // Nombre de usuario
+    String getPassword();              // Contraseña (encriptada)
+    Collection<GrantedAuthority> getAuthorities(); // Roles/permisos
+    boolean isAccountNonExpired();     // ¿Cuenta no expirada?
+    boolean isAccountNonLocked();      // ¿Cuenta no bloqueada?
+    boolean isCredentialsNonExpired(); // ¿Credenciales no expiradas?
+    boolean isEnabled();               // ¿Usuario habilitado?
+}
+```
+
+Spring proporciona una implementación por defecto llamada `User` que puedes usar directamente:
+
+```java
+UserDetails usuario = User.builder()
+    .username("juan")
+    .password("$2a$10$...")  // Hash BCrypt
+    .roles("USER")           // Automáticamente añade "ROLE_"
+    .build();
+```
+
+#### ¿Por qué NO validamos la contraseña en el servicio?
+
+**Pregunta común:** "¿No debería el servicio comprobar también la contraseña?"
+
+**Respuesta:** ¡NO! La responsabilidad está separada:
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    FLUJO DE AUTENTICACIÓN                           │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  1. Usuario envía: username="admin", password="admin123"            │
+│                         │                                           │
+│                         ▼                                           │
+│  2. AuthenticationManager llama a UserDetailsService                │
+│                         │                                           │
+│                         ▼                                           │
+│  3. UserDetailsService.loadUserByUsername("admin")                  │
+│     └──▶ Busca SOLO por username en BD                              │
+│     └──▶ Devuelve UserDetails con password ENCRIPTADO               │
+│                         │                                           │
+│                         ▼                                           │
+│  4. PasswordEncoder.matches(passwordEnviada, passwordBD)            │
+│     └──▶ Spring Security compara las contraseñas                    │
+│     └──▶ Si coinciden → autenticación exitosa                       │
+│     └──▶ Si NO coinciden → 401 Unauthorized                         │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+**¿Por qué esta separación?**
+
+| Componente | Responsabilidad |
+|------------|-----------------|
+| `UserDetailsService` | Solo buscar el usuario (por username) |
+| `PasswordEncoder` | Comparar contraseñas de forma segura |
+| `AuthenticationManager` | Orquestar todo el proceso |
+
+**Ventajas:**
+- ✅ **Principio de responsabilidad única** - Cada componente hace una cosa
+- ✅ **Seguridad** - BCrypt necesita comparación especial (no es un simple `equals()`)
+- ✅ **Flexibilidad** - Puedes cambiar el método de encriptación sin tocar el servicio
+
+**⚠️ Nunca hagas esto:**
+```java
+// ❌ MAL - No compares contraseñas manualmente
+public UserDetails loadUserByUsername(String username) {
+    UserEntity user = userRepository.findByUsername(username);
+    // ❌ NUNCA: if (!password.equals(user.getPassword())) throw...
+    // La contraseña está encriptada, no puedes compararla así
+}
+```
+
+**✅ Hazlo así:**
+```java
+// ✅ BIEN - Solo busca el usuario, Spring se encarga del resto
+public UserDetails loadUserByUsername(String username) {
+    UserEntity user = userRepository.findByUsername(username)
+        .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
+    
+    // Devuelve los datos, Spring Security valida la contraseña después
+    return new User(
+        user.getUsername(),
+        user.getPassword(),  // Password encriptada de la BD
+        List.of(new SimpleGrantedAuthority(user.getRole()))
+    );
+}
+```
+
+---
+
 ```java
 @Service
 public class DbUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) {
-        // 1. Buscar usuario en la BD
+        // 1. Buscar usuario en la BD (SOLO por username)
         UserEntity user = userRepository.findByUsername(username)
             .orElseThrow(() -> new UsernameNotFoundException("No encontrado"));
 
         // 2. Convertir a UserDetails (lo que Spring Security entiende)
+        //    Spring Security se encargará de validar la contraseña
         return new User(
             user.getUsername(),
-            user.getPassword(),
+            user.getPassword(),  // Contraseña encriptada
             List.of(new SimpleGrantedAuthority(user.getRole()))
         );
     }
@@ -249,7 +435,7 @@ curl -u user:password http://localhost:8080/api/admin  # → 403 Forbidden
 
 ---
 
-## 🎯 RETO: Tu Turno
+##  RETO
 
 ### Objetivo
 Añadir un nuevo rol **ROLE_MODERATOR** a la aplicación y crear 2 endpoints nuevos.
