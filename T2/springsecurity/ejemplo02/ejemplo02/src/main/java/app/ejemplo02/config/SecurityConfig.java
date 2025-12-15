@@ -3,6 +3,8 @@ package app.ejemplo02.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
@@ -19,6 +21,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/test/public", "/h2-console/**").permitAll()
+                        .requestMatchers("/api/auth/**").permitAll() // endpoints de autenticación públicos
                         .requestMatchers("/test/authenticated", "/test/me").authenticated()
                         .requestMatchers("/session/**").authenticated() // endpoints de sesión requieren autenticación
                         .requestMatchers("/ejemplos/**").permitAll() // ejemplos accesibles sin autenticación (para probar el carrito sin login)
@@ -37,6 +40,11 @@ public class SecurityConfig {
                         .clearAuthentication(true)
                 );
         return http.build();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
     }
 
     @Bean
