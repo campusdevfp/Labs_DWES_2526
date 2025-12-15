@@ -26,6 +26,7 @@ public class SecurityConfig {
                 )
                 .headers(headers -> headers.frameOptions(frame -> frame.disable())) // para H2 console
                 .httpBasic(httpBasic -> {})
+                .formLogin(formLogin -> {})
                 .logout(logout -> logout
                         .logoutUrl("/session/logout")
                         .logoutSuccessHandler((request, response, authentication) -> {

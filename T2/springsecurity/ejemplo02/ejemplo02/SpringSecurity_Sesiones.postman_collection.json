@@ -1,0 +1,453 @@
+{
+	"info": {
+		"_postman_id": "b5e7c8d9-1234-5678-9abc-def012345678",
+		"name": "Spring Security Sesiones",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080"
+		}
+	],
+	"item": [
+		{
+			"name": "1. Test Endpoints",
+			"item": [
+				{
+					"name": "Público (sin auth)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{baseUrl}}/test/public"
+					}
+				},
+				{
+					"name": "Login USER",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "username",
+									"value": "user"
+								},
+								{
+									"key": "password",
+									"value": "password"
+								}
+							]
+						},
+						"url": "{{baseUrl}}/login"
+					}
+				},
+				{
+					"name": "Login ADMIN",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "username",
+									"value": "admin"
+								},
+								{
+									"key": "password",
+									"value": "admin123"
+								}
+							]
+						},
+						"url": "{{baseUrl}}/login"
+					}
+				},
+				{
+					"name": "Autenticado USER",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{baseUrl}}/test/authenticated"
+					}
+				},
+				{
+					"name": "Autenticado ADMIN",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{baseUrl}}/test/authenticated"
+					}
+				},
+				{
+					"name": "Mi Info USER",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{baseUrl}}/test/me"
+					}
+				},
+				{
+					"name": "Mi Info ADMIN",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{baseUrl}}/test/me"
+					}
+				},
+				{
+					"name": "Sin Auth (401)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{baseUrl}}/test/authenticated"
+					}
+				}
+			]
+		},
+		{
+			"name": "2. Sesiones",
+			"item": [
+				{
+					"name": "Info Sesión",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{baseUrl}}/session/info"
+					}
+				},
+				{
+					"name": "Ver Atributos",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{baseUrl}}/session/attributes"
+					}
+				},
+				{
+					"name": "Guardar Atributo",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/session/attribute?key=miDato&value=valorPrueba",
+							"host": ["{{baseUrl}}"],
+							"path": ["session", "attribute"],
+							"query": [
+								{"key": "key", "value": "miDato"},
+								{"key": "value", "value": "valorPrueba"}
+							]
+						}
+					}
+				},
+				{
+					"name": "Obtener Atributo",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{baseUrl}}/session/attribute/miDato"
+					}
+				},
+				{
+					"name": "Ver Timeout",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{baseUrl}}/session/timeout"
+					}
+				},
+				{
+					"name": "Logout",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": "{{baseUrl}}/session/logout"
+					}
+				}
+			]
+		},
+		{
+			"name": "3. Carrito",
+			"item": [
+				{
+					"name": "Agregar Laptop",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/ejemplos/carrito/agregar?producto=Laptop&cantidad=1",
+							"host": ["{{baseUrl}}"],
+							"path": ["ejemplos", "carrito", "agregar"],
+							"query": [
+								{"key": "producto", "value": "Laptop"},
+								{"key": "cantidad", "value": "1"}
+							]
+						}
+					}
+				},
+				{
+					"name": "Agregar Mouse x2",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/ejemplos/carrito/agregar?producto=Mouse&cantidad=2",
+							"host": ["{{baseUrl}}"],
+							"path": ["ejemplos", "carrito", "agregar"],
+							"query": [
+								{"key": "producto", "value": "Mouse"},
+								{"key": "cantidad", "value": "2"}
+							]
+						}
+					}
+				},
+				{
+					"name": "Agregar Teclado",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/ejemplos/carrito/agregar?producto=Teclado&cantidad=1",
+							"host": ["{{baseUrl}}"],
+							"path": ["ejemplos", "carrito", "agregar"],
+							"query": [
+								{"key": "producto", "value": "Teclado"},
+								{"key": "cantidad", "value": "1"}
+							]
+						}
+					}
+				},
+				{
+					"name": "Ver Carrito",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{baseUrl}}/ejemplos/carrito/ver"
+					}
+				},
+				{
+					"name": "Vaciar Carrito",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": "{{baseUrl}}/ejemplos/carrito/vaciar"
+					}
+				}
+			]
+		},
+		{
+			"name": "4. Preferencias",
+			"item": [
+				{
+					"name": "Idioma Inglés",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/ejemplos/preferencias/idioma?idioma=en",
+							"host": ["{{baseUrl}}"],
+							"path": ["ejemplos", "preferencias", "idioma"],
+							"query": [
+								{"key": "idioma", "value": "en"}
+							]
+						}
+					}
+				},
+				{
+					"name": "Idioma Español",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/ejemplos/preferencias/idioma?idioma=es",
+							"host": ["{{baseUrl}}"],
+							"path": ["ejemplos", "preferencias", "idioma"],
+							"query": [
+								{"key": "idioma", "value": "es"}
+							]
+						}
+					}
+				},
+				{
+					"name": "Tema Oscuro",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/ejemplos/preferencias/tema?tema=oscuro",
+							"host": ["{{baseUrl}}"],
+							"path": ["ejemplos", "preferencias", "tema"],
+							"query": [
+								{"key": "tema", "value": "oscuro"}
+							]
+						}
+					}
+				},
+				{
+					"name": "Tema Claro",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/ejemplos/preferencias/tema?tema=claro",
+							"host": ["{{baseUrl}}"],
+							"path": ["ejemplos", "preferencias", "tema"],
+							"query": [
+								{"key": "tema", "value": "claro"}
+							]
+						}
+					}
+				},
+				{
+					"name": "Ver Preferencias",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{baseUrl}}/ejemplos/preferencias"
+					}
+				}
+			]
+		},
+		{
+			"name": "5. Historial",
+			"item": [
+				{
+					"name": "Agregar /productos/123",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/ejemplos/historial/agregar?pagina=/productos/123",
+							"host": ["{{baseUrl}}"],
+							"path": ["ejemplos", "historial", "agregar"],
+							"query": [
+								{"key": "pagina", "value": "/productos/123"}
+							]
+						}
+					}
+				},
+				{
+					"name": "Agregar /productos/456",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/ejemplos/historial/agregar?pagina=/productos/456",
+							"host": ["{{baseUrl}}"],
+							"path": ["ejemplos", "historial", "agregar"],
+							"query": [
+								{"key": "pagina", "value": "/productos/456"}
+							]
+						}
+					}
+				},
+				{
+					"name": "Agregar /categorias/tech",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/ejemplos/historial/agregar?pagina=/categorias/tech",
+							"host": ["{{baseUrl}}"],
+							"path": ["ejemplos", "historial", "agregar"],
+							"query": [
+								{"key": "pagina", "value": "/categorias/tech"}
+							]
+						}
+					}
+				},
+				{
+					"name": "Ver Historial",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{baseUrl}}/ejemplos/historial"
+					}
+				}
+			]
+		},
+		{
+			"name": "6. Wizard Registro",
+			"item": [
+				{
+					"name": "Paso 1 - Datos",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/ejemplos/registro/paso1?nombre=Juan Garcia&email=juan@mail.com",
+							"host": ["{{baseUrl}}"],
+							"path": ["ejemplos", "registro", "paso1"],
+							"query": [
+								{"key": "nombre", "value": "Juan Garcia"},
+								{"key": "email", "value": "juan@mail.com"}
+							]
+						}
+					}
+				},
+				{
+					"name": "Paso 2 - Contacto",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/ejemplos/registro/paso2?telefono=612345678&ciudad=Madrid",
+							"host": ["{{baseUrl}}"],
+							"path": ["ejemplos", "registro", "paso2"],
+							"query": [
+								{"key": "telefono", "value": "612345678"},
+								{"key": "ciudad", "value": "Madrid"}
+							]
+						}
+					}
+				},
+				{
+					"name": "Ver Estado",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{baseUrl}}/ejemplos/registro/estado"
+					}
+				},
+				{
+					"name": "Paso 3 - Confirmar",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": "{{baseUrl}}/ejemplos/registro/paso3"
+					}
+				},
+				{
+					"name": "Paso 2 sin Paso 1 (Error)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/ejemplos/registro/paso2?telefono=999&ciudad=Test",
+							"host": ["{{baseUrl}}"],
+							"path": ["ejemplos", "registro", "paso2"],
+							"query": [
+								{"key": "telefono", "value": "999"},
+								{"key": "ciudad", "value": "Test"}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "7. H2 Console",
+			"item": [
+				{
+					"name": "H2 Console (abrir en navegador)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{baseUrl}}/h2-console"
+					}
+				}
+			]
+		}
+	]
+}
