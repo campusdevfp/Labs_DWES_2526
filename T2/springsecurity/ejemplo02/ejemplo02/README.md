@@ -409,27 +409,158 @@ public class SessionController {
 
 ---
 
-### Explicación de los Ejemplos Prácticos
+## 📁 Explicación Detallada de los Archivos de Código
 
-Los ejemplos prácticos demuestran cómo usar la sesión para almacenar datos temporales del usuario. Cada uno simula un caso de uso real en una aplicación web.
+A continuación, explico cada archivo de código proporcionado, su propósito, métodos clave y cómo encaja en el proyecto de Spring Security con sesiones.
 
-#### 1. Carrito de Compras
-- **¿Qué es?**: Un carrito de compras virtual donde el usuario añade productos antes de "comprar".
-- **Cómo funciona**: Los productos se guardan en la sesión como una lista. Cada usuario tiene su propio carrito.
-- **Por qué es útil**: Permite al usuario añadir productos sin perderlos si navega por otras páginas.
-- **Ejemplo de uso**: Añades un "Laptop" al carrito, luego un "Mouse", y ves ambos en `/ejemplos/carrito/ver`.
+### 1. DbUserDetailsService.java (Servicio de carga de usuarios)
+**Ubicación:** `src/main/java/app/ejemplo02/user/DbUserDetailsService.java`
 
-#### 2. Preferencias de Usuario
-- **¿Qué es?**: Configuraciones personales del usuario, como idioma o tema de la aplicación.
-- **Cómo funciona**: Se guardan en la sesión como atributos simples (clave-valor).
-- **Por qué es útil**: Personaliza la experiencia del usuario sin necesidad de base de datos.
-- **Ejemplo de uso**: Cambias el idioma a "en" y el tema a "oscuro", y se recuerda en la sesión.
+**Propósito:** Implementa la interfaz `UserDetailsService` de Spring Security para cargar detalles de usuarios desde la base de datos durante la autenticación.
 
-#### 3. Formulario Multi-Paso (Wizard)
-- **¿Qué es?**: Un formulario dividido en pasos, donde cada paso guarda datos temporalmente en la sesión hasta completar el proceso.
-- **Cómo funciona**: Cada paso añade datos a la sesión (ej. paso 1: nombre y email; paso 2: teléfono y ciudad). Al final, se procesan todos los datos.
-- **Por qué es útil**: Evita perder datos si el usuario se distrae o recarga la página. Común en registros largos o configuraciones.
-- **Ejemplo de uso**: Paso 1: introduces nombre y email; Paso 2: teléfono y ciudad; Paso 3: confirmas y se "envía" el formulario.
+**Métodos clave:**
+- `loadUserByUsername(String username)`: Busca al usuario en la BD usando `UserRepository`. Si no existe, lanza `UsernameNotFoundException`. Crea y devuelve un objeto `User` de Spring Security con username, password encriptada y roles.
 
-Estos ejemplos ilustran cómo la sesión mantiene el estado del usuario de forma temporal y segura, sin necesidad de persistencia en base de datos para datos efímeros.
+**Cómo encaja:** Es usado automáticamente por Spring Security en el proceso de login. Sin este servicio, no se podrían autenticar usuarios desde la BD.
 
+**Ejemplo de uso:** Cuando un usuario intenta loguearse, Spring llama a este método para obtener sus datos.
+
+---
+
+### 2. SecurityConfig.java (Configuración de seguridad)
+**Ubicación:** `src/main/java/app/ejemplo02/config/SecurityConfig.java`
+
+**Propósito:** Configura toda la seguridad de la aplicación usando Spring Security, definiendo reglas de autorización, autenticación y manejo de sesiones.
+
+**Métodos clave:**
+- `securityFilterChain(HttpSecurity http)`: Configura el filtro de seguridad.
+  - Deshabilita CSRF para APIs REST.
+  - Define rutas públicas (`/test/public`, `/h2-console/**`, `/api/auth/**`) y protegidas (`/session/**` requiere autenticación).
+  - Habilita HTTP Basic y Form Login.
+  - Configura logout en `/session/logout` con invalidación de sesión.
+- `authenticationManager(AuthenticationConfiguration config)`: Proporciona el gestor de autenticación.
+- `passwordEncoder()`: Usa un encoder delegante para passwords (soporta BCrypt, etc.).
+
+**Cómo encaja:** Es el núcleo de la configuración de seguridad. Define qué endpoints proteger y cómo manejar la autenticación.
+
+**Ejemplo de uso:** Sin esta configuración, Spring Security no sabría qué proteger o cómo autenticar.
+
+---
+
+### 3. AuthController.java (Controlador de autenticación REST)
+**Ubicación:** `src/main/java/app/ejemplo02/controller/AuthController.java`
+
+**Propósito:** Maneja endpoints de login/logout para APIs REST, permitiendo autenticación sin formularios HTML tradicionales.
+
+**Métodos clave:**
+- `login(LoginRequest loginRequest, HttpServletRequest request)`: Recibe JSON con username/password, autentica usando `AuthenticationManager`, guarda el `SecurityContext` en la sesión y devuelve info del usuario.
+- `logout(HttpServletRequest request)`: Invalida la sesión y limpia el contexto de seguridad.
+
+**Cómo encaja:** Complementa la autenticación básica de Spring Security con endpoints RESTful. Útil para frontends como Angular.
+
+**Ejemplo de uso:** POST a `/api/auth/login` con `{"username":"user","password":"password"}` para iniciar sesión.
+
+---
+
+### 4. DebugController.java (Controlador de depuración)
+**Ubicación:** `src/main/java/app/ejemplo02/controller/DebugController.java`
+
+**Propósito:** Proporciona endpoints para depurar y gestionar usuarios en desarrollo/testing.
+
+**Métodos clave:**
+- `listUsers()`: Lista todos los usuarios con ID, username, password encriptada y role.
+- `resetAdminPassword(String password)`: Cambia la contraseña del usuario "admin" y la guarda encriptada.
+
+**Cómo encaja:** No es parte del flujo normal, pero ayuda a verificar usuarios y resetear credenciales en desarrollo.
+
+**Ejemplo de uso:** GET `/debug/users` para ver todos los usuarios en la BD.
+
+---
+
+### 5. EjemplosSessionController.java (Ejemplos prácticos de sesiones)
+**Ubicación:** `src/main/java/app/ejemplo02/controller/EjemplosSessionController.java`
+
+**Propósito:** Demuestra usos reales de `HttpSession` con ejemplos como carrito, preferencias, historial, wizard, etc.
+
+**Secciones clave:**
+- **Carrito de compras:** Agrega/ver/vacía productos en sesión.
+- **Preferencias:** Guarda idioma/tema.
+- **Historial:** Lista páginas visitadas.
+- **Wizard:** Formulario multi-paso guardando datos en sesión.
+- **Flash messages, contador de visitas, datos temporales con TTL.**
+
+**Cómo encaja:** Ilustra conceptos teóricos de sesiones con código funcional. Endpoints `/ejemplos/*` son públicos para probar sin login.
+
+**Ejemplo de uso:** POST `/ejemplos/carrito/agregar?producto=Laptop&cantidad=1` para añadir al carrito.
+
+---
+
+### 6. SessionController.java (Gestión avanzada de sesiones)
+**Ubicación:** `src/main/java/app/ejemplo02/controller/SessionController.java`
+
+**Propósito:** Permite inspeccionar y manipular sesiones: ver info, atributos, configurar timeout, etc.
+
+**Métodos clave:**
+- `obtenerInfoSesion()`: Devuelve ID de sesión, usuario, roles, tiempos.
+- `obtenerAtributosSesion()`: Lista atributos en la sesión.
+- `guardarAtributo()` / `obtenerAtributo()`: Guarda/recupera datos personalizados.
+- `cerrarSesion()`: Logout manual.
+- `obtenerTimeout()` / `configurarTimeout()`: Gestiona tiempo de expiración.
+
+**Cómo encaja:** Complementa ejemplos básicos, mostrando cómo Spring maneja sesiones internamente.
+
+**Ejemplo de uso:** GET `/session/info` para ver detalles de la sesión actual.
+
+---
+
+### 7. TestController.java (Controlador de pruebas básicas)
+**Ubicación:** `src/main/java/app/ejemplo02/controller/TestController.java`
+
+**Propósito:** Endpoints simples para probar autenticación.
+
+**Métodos clave:**
+- `endpointPublico()`: Accesible sin login.
+- `endpointAutenticado()`: Requiere autenticación, saluda al usuario.
+- `obtenerMiInfo()`: Devuelve username y roles del usuario logueado.
+
+**Cómo encaja:** Base para probar configuración de seguridad. Endpoints `/test/*` usados en ejemplos de curl/Postman.
+
+**Ejemplo de uso:** GET `/test/me` para ver info del usuario autenticado.
+
+---
+
+### 8. UserEntity.java (Entidad JPA para usuarios)
+**Ubicación:** `src/main/java/app/ejemplo02/models/UserEntity.java`
+
+**Propósito:** Modelo de datos para la tabla `users` en la BD.
+
+**Campos:** ID (auto-generado), username (único), password (encriptada), role (ej. "ROLE_USER").
+
+**Cómo encaja:** Usado por `UserRepository` para persistir usuarios. Spring Data JPA crea la tabla automáticamente.
+
+**Ejemplo de uso:** `UserEntity user = new UserEntity(); user.setUsername("user");` para crear un usuario.
+
+---
+
+### 9. UserService.java (Servicio de negocio para usuarios)
+**Ubicación:** `src/main/java/app/ejemplo02/service/UserService.java`
+
+**Propósito:** Lógica de negocio para gestionar usuarios: crear, buscar, listar.
+
+**Métodos clave:**
+- `crearUsuario()`: Crea usuario con password encriptada.
+- `buscarPorUsername()`: Busca por username.
+- `listarTodos()`: Lista todos los usuarios.
+
+**Cómo encaja:** Abstrae lógica de BD, usado por controladores o servicios de autenticación.
+
+**Ejemplo de uso:** `userService.crearUsuario("user", "password", "ROLE_USER");` para crear un usuario.
+
+---
+
+### 10. DbUserDetailsService.java (Duplicado)
+Es idéntico al archivo 1. Explicación igual: carga usuarios desde BD para autenticación.
+
+---
+
+Estos archivos forman una aplicación completa de Spring Security con sesiones: configuración, autenticación, ejemplos prácticos y gestión de usuarios. Si necesitas más detalles sobre algún método o archivo específico, dime.
