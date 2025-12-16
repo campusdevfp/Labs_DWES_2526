@@ -18,71 +18,129 @@
 
 ### Flujo de autenticación con sesión
 
-##  Endpoints Disponibles |                              |                          |
-| Método | Endpoint                              | Descripción                        | Autenticación |
-|--------|---------------------------------------|------------------------------------|---------------|
-| POST   | `/api/auth/login`                     | Login con usuario y contraseña     | No            |
-| GET    | `/api/auth/me`                        | Info del usuario autenticado       | Sí            |
-| POST   | `/ejemplos/carrito/agregar`           | Añadir producto al carrito         | Sí            |
-| GET    | `/ejemplos/carrito/ver`               | Ver el carrito actual              | Sí            |
-| DELETE | `/ejemplos/carrito/vaciar`            | Vaciar el carrito                  | Sí            |
-| GET    | `/test/public`                        | Endpoint público                   | No            |
-| GET    | `/test/private`                       | Endpoint privado                   | Sí            |
+## 🚦 Endpoints Disponibles
+
+| Método | Endpoint                        | Descripción detallada                                                                 | Autenticación |
+|--------|----------------------------------|---------------------------------------------------------------------------------------|---------------|
+| POST   | `/api/auth/login`               | Inicia sesión. Recibe usuario y contraseña, y crea la sesión si son correctos.        | No            |
+| GET    | `/api/auth/me`                  | Devuelve información del usuario autenticado (nombre, roles, etc).                    | Sí            |
+| POST   | `/ejemplos/carrito/agregar`     | Añade un producto al carrito de la sesión actual.                                     | Sí            |
+| GET    | `/ejemplos/carrito/ver`         | Muestra el contenido actual del carrito de la sesión.                                 | Sí            |
+| DELETE | `/ejemplos/carrito/vaciar`      | Vacía el carrito de la sesión actual.                                                 | Sí            |
+| GET    | `/test/public`                  | Endpoint público de prueba, accesible sin autenticación.                              | No            |
+| GET    | `/test/private`                 | Endpoint privado de prueba, solo accesible si estás autenticado.                      | Sí            |
+
+---
+
+### Explicación de cada endpoint
+
+- **POST `/api/auth/login`**: Permite iniciar sesión enviando un JSON con `username` y `password`. Si las credenciales son correctas, se crea una sesión y se devuelve la cookie de sesión. Úsalo para autenticarte antes de acceder a recursos protegidos.
+  - Ejemplo de uso:
+    ```bash
+    curl -c cookies.txt -X POST -H "Content-Type: application/json" -d '{"username":"user","password":"password"}' http://localhost:8080/api/auth/login
+    ```
+
+- **GET `/api/auth/me`**: Devuelve los datos del usuario actualmente autenticado (por ejemplo, nombre y roles). Útil para mostrar información del usuario en el frontend.
+  - Ejemplo de uso:
+    ```bash
+    curl -b cookies.txt http://localhost:8080/api/auth/me
+    ```
+
+- **POST `/ejemplos/carrito/agregar`**: Añade un producto al carrito de la sesión. Requiere parámetros `producto` y `cantidad` en la URL. El carrito se almacena en la sesión del usuario.
+  - Ejemplo de uso:
+    ```bash
+    curl -b cookies.txt -X POST "http://localhost:8080/ejemplos/carrito/agregar?producto=Laptop&cantidad=1"
+    ```
+
+- **GET `/ejemplos/carrito/ver`**: Muestra el contenido actual del carrito asociado a la sesión. Útil para que el usuario vea qué productos ha añadido.
+  - Ejemplo de uso:
+    ```bash
+    curl -b cookies.txt http://localhost:8080/ejemplos/carrito/ver
+    ```
+
+- **DELETE `/ejemplos/carrito/vaciar`**: Elimina todos los productos del carrito de la sesión actual. Úsalo para vaciar el carrito antes de una nueva compra.
+  - Ejemplo de uso:
+    ```bash
+    curl -b cookies.txt -X DELETE http://localhost:8080/ejemplos/carrito/vaciar
+    ```
+
+- **GET `/test/public`**: Endpoint de prueba accesible para cualquier usuario, sin autenticación. Útil para comprobar que el servidor responde.
+  - Ejemplo de uso:
+    ```bash
+    curl http://localhost:8080/test/public
+    ```
+
+- **GET `/test/private`**: Endpoint de prueba que solo responde si el usuario está autenticado. Útil para comprobar que la autenticación funciona.
+  - Ejemplo de uso:
+    ```bash
+    curl -b cookies.txt http://localhost:8080/test/private
+    ```
 
 ---
 
 ## Gestión de Carrito y Sesiones
 
-- **Authentication**: Objeto con tu información de usuario
 - El carrito de compras se almacena en la sesión HTTP del usuario.
 - Cada usuario autenticado tiene su propio carrito.
 - Si la sesión expira o se cierra, el carrito se pierde.
-### ¿Se puede configurar la expiración de la cookie de sesión?
-Sí, en Spring Boot puedes configurar el tiempo de expiración de la sesión en `application.properties`:
+
+### Configuración de expiración de la sesión
+Puedes configurar el tiempo de expiración de la sesión en `application.properties`:
+
+```properties
+server.servlet.session.timeout=30m
+```
+
+---
 
 ##  Ejemplos Prácticos (curl, Postman, Angular)
-server.servlet.session.timeout=30m
+
 ### Usando curl (simulación de navegador con cookies)
 
-### Depuración de Sesiones
-
+```bash
 # 1. Login y guarda la cookie de sesión
 curl -c cookies.txt -X POST -H "Content-Type: application/json" -d '{"username":"user","password":"password"}' http://localhost:8080/api/auth/login
-- Chrome: DevTools → Application → Cookies
+
 # 2. Añadir producto al carrito (usando la cookie de sesión)
 curl -b cookies.txt -X POST "http://localhost:8080/ejemplos/carrito/agregar?producto=Laptop&cantidad=1"
-#### Ver Sesión en Servidor
+
 # 3. Ver el carrito
-@GetMapping("/debug/session")
-public Map<String, Object> debugSession(HttpSession session) {
+curl -b cookies.txt http://localhost:8080/ejemplos/carrito/ver
+
 # 4. Vaciar el carrito
-    info.put("id", session.getId());
-    info.put("creationTime", new Date(session.getCreationTime()));
-    info.put("lastAccessedTime", new Date(session.getLastAccessedTime()));
+curl -b cookies.txt -X DELETE http://localhost:8080/ejemplos/carrito/vaciar
+```
+
+> Puedes ver las cookies en el navegador en: DevTools → Application → Cookies
+
+---
+
 ### Usando Postman
-    while (attrs.hasMoreElements()) {
+
 1. Haz una petición POST a `/api/auth/login` con el body:
-```json
+   ```json
    {
      "username": "user",
      "password": "password"
    }
-```
+   ```
 2. Postman guardará la cookie de sesión automáticamente.
 3. Realiza las siguientes peticiones (no necesitas añadir la cookie manualmente):
    - POST `/ejemplos/carrito/agregar?producto=Mouse&cantidad=2`
    - GET `/ejemplos/carrito/ver`
    - DELETE `/ejemplos/carrito/vaciar`
 4. Puedes ver las cookies en la pestaña "Cookies" de Postman (abajo a la derecha en la ventana de la petición).
-### Endpoints de Prueba (`/test/*`)
+
+---
+
 ### Usando Angular (ejemplo básico de integración)
-| Método | Endpoint | Acceso | Descripción |
+
 ```typescript
 // auth.service.ts
 login(username: string, password: string) {
   return this.http.post('/api/auth/login', { username, password }, { withCredentials: true });
 }
-| GET | `/test/me` | Autenticado | Información del usuario actual |
+
 // carrito.service.ts
 agregarProducto(producto: string, cantidad: number) {
   return this.http.post(`/ejemplos/carrito/agregar?producto=${producto}&cantidad=${cantidad}`, {}, { withCredentials: true });
@@ -96,29 +154,10 @@ vaciarCarrito() {
 ```
 
 > **Nota:** Es importante usar `{ withCredentials: true }` en Angular para que se envíen las cookies de sesión.
-| GET | `/session/timeout` | Tiempo de vida de la sesión |
-| POST | `/session/logout` | Cierra la sesión (logout) |
-
-### Endpoints de Ejemplos (`/ejemplos/*`) - Públicos
-
-| Método | Endpoint | Descripción |
-|--------|----------|-------------|
-| POST | `/ejemplos/carrito/agregar?producto=x&cantidad=n` | Agregar al carrito |
-| GET | `/ejemplos/carrito/ver` | Ver carrito |
-| DELETE | `/ejemplos/carrito/vaciar` | Vaciar carrito |
-| POST | `/ejemplos/preferencias/idioma?idioma=es` | Cambiar idioma |
-| POST | `/ejemplos/preferencias/tema?tema=oscuro` | Cambiar tema |
-| GET | `/ejemplos/preferencias` | Ver preferencias |
-| POST | `/ejemplos/historial/agregar?pagina=/url` | Agregar al historial |
-| GET | `/ejemplos/historial` | Ver historial |
-| POST | `/ejemplos/registro/paso1?nombre=x&email=y` | Wizard paso 1 |
-| POST | `/ejemplos/registro/paso2?telefono=x&ciudad=y` | Wizard paso 2 |
-| POST | `/ejemplos/registro/paso3` | Wizard confirmar |
-| GET | `/ejemplos/registro/estado` | Estado del wizard |
 
 ---
 
-## 🧪 Gestión de Sesiones
+##  Gestión de Sesiones
 
 ### 1. Probar autenticación básica
 
@@ -541,5 +580,3 @@ export class CarritoComponent implements OnInit {
 - **Orden de ejecución**: Primero haz login, luego las demás peticiones usarán la sesión automáticamente.
 - **Manejo de errores**: Implementa interceptores para redirigir a login si la sesión expira (401).
 - **Producción**: Cambia las URLs y configura HTTPS.
-
-Con estos ejemplos, puedes integrar completamente Angular con este backend Spring Security.
