@@ -6,7 +6,7 @@
 3. [Conceptos Clave](#conceptos-clave)
 4. [Explicación del Código](#explicación-del-código)
 5. [Cómo Probar la Aplicación](#cómo-probar-la-aplicación)
-6. [🎯 RETO: Tu Turno](#-reto-tu-turno)
+6. [ RETO ](#-reto-tu-turno)
 
 ---
 
@@ -442,12 +442,29 @@ Añadir un nuevo rol **ROLE_MODERATOR** a la aplicación y crear 2 endpoints nue
 
 ### Requisitos
 
-#### 1. Nuevos Roles
-- **ROLE_USER** - Solo lectura
-- **ROLE_MODERATOR** - Lectura y edición (rol nuevo)
-- **ROLE_ADMIN** - Todo
+#### 1. Nuevos Roles y Permisos
 
-#### 2. Nuevos Endpoints a crear
+A continuación se muestra para qué sirve cada rol y qué puede hacer en la aplicación:
+
+| Rol             | Permisos sobre endpoints                  |
+|-----------------|------------------------------------------|
+| ROLE_USER       | Ver contenido (lectura)                  |
+| ROLE_MODERATOR  | Ver y editar contenido (lectura y edición)|
+| ROLE_ADMIN      | Todo (lectura, edición, administración)  |
+
+#### 2. Tabla resumen de endpoints y acceso por rol
+
+| Endpoint                   | USER | MODERATOR | ADMIN |
+|----------------------------|:----:|:---------:|:-----:|
+| `/api/contenido`           |  ✅  |    ✅     |  ✅   |
+| `/api/contenido/editar`    |  ❌  |    ✅     |  ✅   |
+| `/api/user`                |  ✅  |    ✅     |  ✅   |
+| `/api/admin`               |  ❌  |    ❌     |  ✅   |
+
+- Los endpoints nuevos usan los roles USER, MODERATOR y ADMIN según la tabla.
+- Los endpoints antiguos (`/api/user`, `/api/admin`) siguen igual, pero ahora MODERATOR también puede acceder a `/api/user`.
+
+#### 3. Endpoints a crear
 
 | Método | Endpoint | Acceso | Descripción |
 |--------|----------|--------|-------------|
@@ -469,7 +486,7 @@ public String editarContenido() {
 }
 ```
 
-#### 3. Nuevo usuario de prueba
+#### 4. Nuevo usuario de prueba
 
 Añade a `data.sql`:
 ```sql
@@ -480,20 +497,19 @@ INSERT INTO AUTHORITIES (USERNAME, AUTHORITY) VALUES
     ('moderador', 'ROLE_MODERATOR');
 ```
 
-#### 4. Pruebas esperadas
+#### 5. Pruebas esperadas
 
-| Usuario | Endpoint | Resultado |
-|---------|----------|-----------|
-| user | `/api/contenido` | ✅ 200 OK |
-| user | `/api/contenido/editar` | ❌ 403 Forbidden |
-| moderador | `/api/contenido` | ✅ 200 OK |
-| moderador | `/api/contenido/editar` | ✅ 200 OK |
-| admin | `/api/contenido/editar` | ✅ 200 OK |
+| Usuario    | Endpoint                   | Resultado        |
+|------------|----------------------------|------------------|
+| user       | `/api/contenido`           | ✅ 200 OK        |
+| user       | `/api/contenido/editar`    | ❌ 403 Forbidden |
+| moderador  | `/api/contenido`           | ✅ 200 OK        |
+| moderador  | `/api/contenido/editar`    | ✅ 200 OK        |
+| admin      | `/api/contenido/editar`    | ✅ 200 OK        |
 
 ### Pistas
 
 1. Modifica `DemoController.java` y añade los 2 nuevos endpoints.
-
 2. Genera un hash BCrypt para "moderador123" (usa un generador online o código Java):
    ```java
    new BCryptPasswordEncoder().encode("moderador123")
