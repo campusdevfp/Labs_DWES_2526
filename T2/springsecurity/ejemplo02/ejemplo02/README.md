@@ -276,6 +276,7 @@ public class SecurityConfig {
             // Reglas de autorización
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/test/public", "/h2-console/**").permitAll()
+                .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/test/authenticated", "/test/me").authenticated()
                 .requestMatchers("/session/**").authenticated()
                 .requestMatchers("/ejemplos/**").permitAll()
@@ -288,9 +289,16 @@ public class SecurityConfig {
             // Habilitar HTTP Basic
             .httpBasic(httpBasic -> {})
             
+            // Habilitar login con formularios HTML
+            .formLogin(formLogin -> {})
+            
             // Configurar logout
             .logout(logout -> logout
                 .logoutUrl("/session/logout")
+                .logoutSuccessHandler((request, response, authentication) -> {
+                    response.setStatus(HttpServletResponse.SC_OK);
+                    response.getWriter().flush();
+                })
                 .invalidateHttpSession(true)
                 .clearAuthentication(true)
             );
@@ -434,12 +442,24 @@ A continuación, explico cada archivo de código proporcionado, su propósito, m
 
 **Métodos clave:**
 - `securityFilterChain(HttpSecurity http)`: Configura el filtro de seguridad.
-  - Deshabilita CSRF para APIs REST.
-  - Define rutas públicas (`/test/public`, `/h2-console/**`, `/api/auth/**`) y protegidas (`/session/**` requiere autenticación).
-  - Habilita HTTP Basic y Form Login.
-  - Configura logout en `/session/logout` con invalidación de sesión.
-- `authenticationManager(AuthenticationConfiguration config)`: Proporciona el gestor de autenticación.
-- `passwordEncoder()`: Usa un encoder delegante para passwords (soporta BCrypt, etc.).
+  - `.csrf(csrf -> csrf.disable())`: Deshabilita CSRF para APIs REST (común en aplicaciones sin formularios HTML tradicionales).
+  - `.authorizeHttpRequests(auth -> auth ...)`: Define reglas de autorización:
+    - `.requestMatchers("/test/public", "/h2-console/**").permitAll()`: Permite acceso público a endpoints de prueba y consola H2.
+    - `.requestMatchers("/api/auth/**").permitAll()`: Permite acceso público a endpoints de autenticación (login/logout).
+    - `.requestMatchers("/test/authenticated", "/test/me").authenticated()`: Requiere autenticación para endpoints de prueba protegidos.
+    - `.requestMatchers("/session/**").authenticated()`: Requiere autenticación para endpoints de gestión de sesiones.
+    - `.requestMatchers("/ejemplos/**").permitAll()`: Permite acceso público a ejemplos (para probar carrito sin login).
+    - `.anyRequest().authenticated()`: Cualquier otro endpoint requiere autenticación.
+  - `.headers(headers -> headers.frameOptions(frame -> frame.disable()))`: Deshabilita frame options para permitir que la consola H2 se muestre en iframes.
+  - `.httpBasic(httpBasic -> {})`: Habilita autenticación HTTP Basic (usuario:password en headers).
+  - `.formLogin(formLogin -> {})`: Habilita login con formularios HTML (por defecto en /login).
+  - `.logout(logout -> logout ...)`: Configura el logout:
+    - `.logoutUrl("/session/logout")`: Endpoint para cerrar sesión.
+    - `.logoutSuccessHandler((request, response, authentication) -> { ... })`: Handler personalizado que responde con mensaje de éxito.
+    - `.invalidateHttpSession(true)`: Invalida la sesión HTTP al hacer logout.
+    - `.clearAuthentication(true)`: Limpia el contexto de autenticación.
+- `authenticationManager(AuthenticationConfiguration config)`: Proporciona el gestor de autenticación (usado por AuthController).
+- `passwordEncoder()`: Crea un encoder de passwords delegante (soporta múltiples algoritmos como BCrypt).
 
 **Cómo encaja:** Es el núcleo de la configuración de seguridad. Define qué endpoints proteger y cómo manejar la autenticación.
 
@@ -503,9 +523,9 @@ A continuación, explico cada archivo de código proporcionado, su propósito, m
 **Métodos clave:**
 - `obtenerInfoSesion()`: Devuelve ID de sesión, usuario, roles, tiempos.
 - `obtenerAtributosSesion()`: Lista atributos en la sesión.
-- `guardarAtributo()` / `obtenerAtributo()`: Guarda/recupera datos personalizados.
+- `guardarAtributo() / obtenerAtributo()`: Guarda/recupera datos personalizados.
 - `cerrarSesion()`: Logout manual.
-- `obtenerTimeout()` / `configurarTimeout()`: Gestiona tiempo de expiración.
+- `obtenerTimeout() / configurarTimeout()`: Gestiona tiempo de expiración.
 
 **Cómo encaja:** Complementa ejemplos básicos, mostrando cómo Spring maneja sesiones internamente.
 
