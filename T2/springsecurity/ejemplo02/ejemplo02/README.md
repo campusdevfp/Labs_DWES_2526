@@ -1,6 +1,6 @@
-# 🔐 Spring Security con Sesiones HTTP - Guía Completa
+#  Spring Security con Sesiones HTTP - Guía Completa
 
-## 📋 Índice
+##  Índice
 
 1. [Flujo de autenticación con sesión](#flujo-de-autenticación-con-sesión)
 2. [Endpoints Disponibles](#-endpoints-disponibles)
@@ -18,8 +18,7 @@
 
 ### Flujo de autenticación con sesión
 
-## 🚦 Endpoints Disponibles
-  |                              |                          |
+##  Endpoints Disponibles |                              |                          |
 | Método | Endpoint                              | Descripción                        | Autenticación |
 |--------|---------------------------------------|------------------------------------|---------------|
 | POST   | `/api/auth/login`                     | Login con usuario y contraseña     | No            |
@@ -29,10 +28,11 @@
 | DELETE | `/ejemplos/carrito/vaciar`            | Vaciar el carrito                  | Sí            |
 | GET    | `/test/public`                        | Endpoint público                   | No            |
 | GET    | `/test/private`                       | Endpoint privado                   | Sí            |
-```
+
 ---
 
-## 🛒 Gestión de Carrito y Sesiones
+## Gestión de Carrito y Sesiones
+
 - **Authentication**: Objeto con tu información de usuario
 - El carrito de compras se almacena en la sesión HTTP del usuario.
 - Cada usuario autenticado tiene su propio carrito.
@@ -40,11 +40,12 @@
 ### ¿Se puede configurar la expiración de la cookie de sesión?
 Sí, en Spring Boot puedes configurar el tiempo de expiración de la sesión en `application.properties`:
 
-## 💻 Ejemplos Prácticos (curl, Postman, Angular)
+##  Ejemplos Prácticos (curl, Postman, Angular)
 server.servlet.session.timeout=30m
 ### Usando curl (simulación de navegador con cookies)
 
 ### Depuración de Sesiones
+
 # 1. Login y guarda la cookie de sesión
 curl -c cookies.txt -X POST -H "Content-Type: application/json" -d '{"username":"user","password":"password"}' http://localhost:8080/api/auth/login
 - Chrome: DevTools → Application → Cookies
@@ -61,12 +62,12 @@ public Map<String, Object> debugSession(HttpSession session) {
 ### Usando Postman
     while (attrs.hasMoreElements()) {
 1. Haz una petición POST a `/api/auth/login` con el body:
-   ```json
+```json
    {
      "username": "user",
      "password": "password"
    }
-   ```
+```
 2. Postman guardará la cookie de sesión automáticamente.
 3. Realiza las siguientes peticiones (no necesitas añadir la cookie manualmente):
    - POST `/ejemplos/carrito/agregar?producto=Mouse&cantidad=2`
