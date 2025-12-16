@@ -358,225 +358,78 @@ Podrás ver la tabla `users` con los usuarios de prueba.
 
 ---
 
-## 🔑 Conceptos Clave
+## 🔑 Explicación de Conceptos Clave
 
-| Concepto | Descripción |
-|----------|-------------|
-| **JSESSIONID** | Cookie que identifica tu sesión en el servidor |
-| **HttpSession** | Objeto Java donde se guardan datos de la sesión |
-| **SecurityContext** | Contiene el objeto Authentication (usuario autenticado) |
-| **Authentication** | Información del usuario: username, roles, si está autenticado |
-| **session.invalidate()** | Destruye la sesión (logout) |
-| **Timeout** | Tiempo de inactividad antes de que expire (por defecto 30 min) |
+### ¿Qué es una sesión en Spring Boot?
 
----
+Una **sesión HTTP** es un mecanismo que permite al servidor recordar información sobre un usuario entre distintas peticiones HTTP. En aplicaciones web, esto es fundamental para mantener el estado del usuario, como su autenticación, carrito de compras o preferencias.
 
-## ⚠️ Consideraciones
+#### ¿Cómo funciona en Spring Boot?
+- **HttpSession**: Es un objeto Java que se crea automáticamente por Spring y se asocia a cada usuario. Se almacena en el servidor (por defecto en memoria, pero puede ser en Redis o base de datos en producción).
+- **Cookie JSESSIONID**: Cuando un usuario inicia sesión, Spring crea una sesión y envía una cookie llamada `JSESSIONID` al navegador. Esta cookie identifica la sesión en futuras peticiones.
+- **Almacenamiento**: Puedes guardar cualquier objeto serializable en la sesión usando `session.setAttribute("clave", objeto)`. Por ejemplo, el carrito de compras se guarda como un atributo de la sesión.
 
-1. **Las sesiones ocupan memoria**: En producción con muchos usuarios, considera usar Redis
-2. **HTTPS en producción**: Las cookies deben ser seguras (Secure flag)
-3. **Timeout apropiado**: Ajusta según tu caso de uso
-4. **No guardes datos sensibles**: Las contraseñas nunca se guardan en sesión
-5. **Sesiones vs JWT**: Para APIs móviles/SPAs, considera tokens JWT (stateless)
+#### Analogía simple
+Imagina que vas a un supermercado:
+- La **sesión** es tu carrito de compras: el supermercado (servidor) te da un carrito único cuando entras.
+- La **cookie JSESSIONID** es el ticket que te dan: cada vez que vas a una sección, muestras el ticket para que sepan que eres tú.
+- Si sales sin pagar (sesión expira), pierdes el carrito.
 
----
-
-## 🤝 Integración con Angular
-
-Sí, este backend se puede usar perfectamente con un frontend de Angular. A continuación, ejemplos claros de cómo integrarlo.
-
-### 1. Configuración en Spring Security (CORS)
-
-Primero, habilita CORS en `SecurityConfig.java` para permitir peticiones desde Angular (que corre en `http://localhost:4200`):
-
+#### Ejemplo de código en Spring Boot
 ```java
-.cors(cors -> cors.configurationSource(request -> {
-    CorsConfiguration config = new CorsConfiguration();
-    config.setAllowedOrigins(List.of("http://localhost:4200")); // Puerto de Angular
-    config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-    config.setAllowedHeaders(List.of("*"));
-    config.setAllowCredentials(true); // Crucial para cookies de sesión
-    return config;
-}))
-```
+@Controller
+public class SessionController {
 
-### 2. Servicio Angular para Autenticación
+    @GetMapping("/session/info")
+    public Map<String, Object> getSessionInfo(HttpSession session) {
+        Map<String, Object> info = new HashMap<>();
+        info.put("id", session.getId());  // ID único de la sesión
+        info.put("creationTime", new Date(session.getCreationTime()));
+        info.put("lastAccessedTime", new Date(session.getLastAccessedTime()));
+        return info;
+    }
 
-Crea un servicio `auth.service.ts` en Angular:
+    @PostMapping("/session/attribute")
+    public String setAttribute(@RequestParam String key, @RequestParam String value, HttpSession session) {
+        session.setAttribute(key, value);  // Guardar dato en sesión
+        return "Atributo guardado";
+    }
 
-```typescript
-import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
-
-@Injectable({
-  providedIn: 'root'
-})
-export class AuthService {
-  private apiUrl = 'http://localhost:8080';
-
-  constructor(private http: HttpClient) { }
-
-  // Login con Form Login (envía username/password como form data)
-  login(username: string, password: string): Observable<any> {
-    const body = new URLSearchParams();
-    body.set('username', username);
-    body.set('password', password);
-
-    const headers = new HttpHeaders({
-      'Content-Type': 'application/x-www-form-urlencoded'
-    });
-
-    return this.http.post(`${this.apiUrl}/login`, body.toString(), {
-      headers,
-      withCredentials: true  // Envía/recibe cookies
-    });
-  }
-
-  // Verificar si está autenticado
-  getUserInfo(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/test/me`, {
-      withCredentials: true
-    });
-  }
-
-  // Logout
-  logout(): Observable<any> {
-    return this.http.post(`${this.apiUrl}/session/logout`, {}, {
-      withCredentials: true
-    });
-  }
+    @GetMapping("/session/attribute/{key}")
+    public Object getAttribute(@PathVariable String key, HttpSession session) {
+        return session.getAttribute(key);  // Recuperar dato de sesión
+    }
 }
 ```
 
-### 3. Servicio para el Carrito de Compras
+#### Consideraciones importantes
+- **Timeout**: Por defecto, las sesiones expiran después de 30 minutos de inactividad. Puedes configurarlo en `application.properties`.
+- **Seguridad**: Las sesiones son seguras porque el servidor valida la cookie. Si alguien roba la cookie, puede acceder a la sesión (por eso usa HTTPS en producción).
+- **Escalabilidad**: En producción con muchos usuarios, usa Redis para almacenar sesiones en lugar de memoria.
 
-```typescript
-@Injectable({
-  providedIn: 'root'
-})
-export class CarritoService {
-  private apiUrl = 'http://localhost:8080';
+---
 
-  constructor(private http: HttpClient) { }
+### Explicación de los Ejemplos Prácticos
 
-  agregarProducto(producto: string, cantidad: number): Observable<any> {
-      params: { producto, cantidad: cantidad.toString() },
-      withCredentials: true
-    });
-  }
+Los ejemplos prácticos demuestran cómo usar la sesión para almacenar datos temporales del usuario. Cada uno simula un caso de uso real en una aplicación web.
 
-  verCarrito(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/ejemplos/carrito/ver`, {
-      withCredentials: true
-    });
-  }
+#### 1. Carrito de Compras
+- **¿Qué es?**: Un carrito de compras virtual donde el usuario añade productos antes de "comprar".
+- **Cómo funciona**: Los productos se guardan en la sesión como una lista. Cada usuario tiene su propio carrito.
+- **Por qué es útil**: Permite al usuario añadir productos sin perderlos si navega por otras páginas.
+- **Ejemplo de uso**: Añades un "Laptop" al carrito, luego un "Mouse", y ves ambos en `/ejemplos/carrito/ver`.
 
-  vaciarCarrito(): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/ejemplos/carrito/vaciar`, {
-      withCredentials: true
-    });
-  }
-}
-```
+#### 2. Preferencias de Usuario
+- **¿Qué es?**: Configuraciones personales del usuario, como idioma o tema de la aplicación.
+- **Cómo funciona**: Se guardan en la sesión como atributos simples (clave-valor).
+- **Por qué es útil**: Personaliza la experiencia del usuario sin necesidad de base de datos.
+- **Ejemplo de uso**: Cambias el idioma a "en" y el tema a "oscuro", y se recuerda en la sesión.
 
-### 4. Componente de Login
+#### 3. Formulario Multi-Paso (Wizard)
+- **¿Qué es?**: Un formulario dividido en pasos, donde cada paso guarda datos temporalmente en la sesión hasta completar el proceso.
+- **Cómo funciona**: Cada paso añade datos a la sesión (ej. paso 1: nombre y email; paso 2: teléfono y ciudad). Al final, se procesan todos los datos.
+- **Por qué es útil**: Evita perder datos si el usuario se distrae o recarga la página. Común en registros largos o configuraciones.
+- **Ejemplo de uso**: Paso 1: introduces nombre y email; Paso 2: teléfono y ciudad; Paso 3: confirmas y se "envía" el formulario.
 
-```typescript
-import { Component } from '@angular/core';
-import { AuthService } from './auth.service';
+Estos ejemplos ilustran cómo la sesión mantiene el estado del usuario de forma temporal y segura, sin necesidad de persistencia en base de datos para datos efímeros.
 
-@Component({
-  selector: 'app-login',
-  template: `
-    <div>
-      <h2>Login</h2>
-      <input [(ngModel)]="username" placeholder="Usuario" />
-      <input [(ngModel)]="password" type="password" placeholder="Contraseña" />
-      <button (click)="login()">Login</button>
-      <p *ngIf="error">{{ error }}</p>
-    </div>
-  `
-})
-export class LoginComponent {
-  username = '';
-  password = '';
-  error = '';
-
-  constructor(private authService: AuthService) { }
-
-  login() {
-    this.authService.login(this.username, this.password).subscribe({
-      next: (response) => {
-        console.log('Login exitoso', response);
-        // Redirigir o actualizar estado
-      },
-      error: (err) => {
-        this.error = 'Credenciales incorrectas';
-      }
-    });
-  }
-}
-```
-
-### 5. Componente del Carrito
-
-```typescript
-import { Component, OnInit } from '@angular/core';
-import { CarritoService } from './carrito.service';
-
-@Component({
-  selector: 'app-carrito',
-  template: `
-    <div>
-      <h2>Carrito de Compras</h2>
-      <input [(ngModel)]="producto" placeholder="Producto" />
-      <input [(ngModel)]="cantidad" type="number" placeholder="Cantidad" />
-      <button (click)="agregar()">Agregar</button>
-      
-      <h3>Carrito Actual</h3>
-      <pre>{{ carrito | json }}</pre>
-      <button (click)="vaciar()">Vaciar Carrito</button>
-    </div>
-  `
-})
-export class CarritoComponent implements OnInit {
-  producto = '';
-  cantidad = 1;
-  carrito: any = {};
-
-  constructor(private carritoService: CarritoService) { }
-
-  ngOnInit() {
-    this.verCarrito();
-  }
-
-  agregar() {
-    this.carritoService.agregarProducto(this.producto, this.cantidad).subscribe({
-      next: (response) => {
-        console.log('Producto agregado', response);
-        this.verCarrito(); // Actualizar vista
-      }
-    });
-  }
-
-  verCarrito() {
-    this.carritoService.verCarrito().subscribe({
-      next: (data) => this.carrito = data
-    });
-  }
-
-  vaciar() {
-    this.carritoService.vaciarCarrito().subscribe({
-      next: () => this.verCarrito()
-    });
-  }
-}
-```
-
-### Notas Importantes
-
-- **`withCredentials: true`**: Es obligatorio para que Angular envíe las cookies de sesión.
-- **Orden de ejecución**: Primero haz login, luego las demás peticiones usarán la sesión automáticamente.
-- **Manejo de errores**: Implementa interceptores para redirigir a login si la sesión expira (401).
-- **Producción**: Cambia las URLs y configura HTTPS.
