@@ -1,5 +1,21 @@
 # 🔐 Spring Security con Sesiones HTTP - Guía Completa
 
+## 📋 Índice
+
+1. [Flujo de autenticación con sesión](#flujo-de-autenticación-con-sesión)
+2. [Endpoints Disponibles](#-endpoints-disponibles)
+3. [Gestión de Carrito y Sesiones](#-gestión-de-carrito-y-sesiones)
+4. [Ejemplos Prácticos (curl, Postman, Angular)](#-ejemplos-prácticos-curl-postman-angular)
+5. [Gestión de Sesiones](#-gestión-de-sesiones)
+6. [Ejemplos Prácticos](#-ejemplos-prácticos)
+7. [Configuración de Seguridad](#-configuración-de-seguridad)
+8. [Consola H2 (Ver Base de Datos)](#-consola-h2-ver-base-de-datos)
+9. [Conceptos Clave](#-conceptos-clave)
+10. [Consideraciones](#-consideraciones)
+11. [Integración con Angular](#-integración-con-angular)
+
+---
+
 ### Flujo de autenticación con sesión
 
 ## 🚦 Endpoints Disponibles
@@ -405,16 +421,6 @@ export class CarritoService {
   constructor(private http: HttpClient) { }
 
   agregarProducto(producto: string, cantidad: number): Observable<any> {
----
-
-## 📝 Notas para el alumno
-
-- Las sesiones y cookies son fundamentales para mantener el estado del usuario en aplicaciones web.
-- El backend puede ser consumido por cualquier frontend (Angular, React, Postman, curl, etc.) siempre que gestione correctamente las cookies de sesión.
-- Si tienes problemas de autenticación, revisa que las cookies se estén enviando correctamente en cada petición.
-- Puedes modificar la duración de la sesión en `application.properties`.
-
----
       params: { producto, cantidad: cantidad.toString() },
       withCredentials: true
     });
