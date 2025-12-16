@@ -438,7 +438,8 @@ curl -u user:password http://localhost:8080/api/admin  # → 403 Forbidden
 ##  RETO
 
 ### Objetivo
-Añadir un nuevo rol **ROLE_MODERATOR** a la aplicación y crear 2 endpoints nuevos.
+La aplicación debe tener tres roles: **ROLE_USER**, **ROLE_MODERATOR** y **ROLE_ADMIN**.
+Añade el nuevo rol **ROLE_MODERATOR** y crea 2 endpoints nuevos que usen estos roles según la tabla de permisos.
 
 ### Requisitos
 
