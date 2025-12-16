@@ -1,344 +1,84 @@
-
-
 # 🔐 Spring Security con Sesiones HTTP - Guía Completa
-
-
-## 📋 Índice
-
-1. [Configuración del Proyecto](#-configuración-del-proyecto)
-2. [Usuarios de Prueba](#-usuarios-de-prueba)
-3. [Cómo Funciona la Autenticación](#-cómo-funciona-la-autenticación)
-4. [Endpoints Disponibles](#-endpoints-disponibles)
-5. [Gestión de Sesiones](#-gestión-de-sesiones)
-6. [Ejemplos Prácticos](#-ejemplos-prácticos)
-7. [Configuración de Seguridad](#-configuración-de-seguridad)
-
----
-
-## ⚙️ Configuración del Proyecto
-
-### Tecnologías utilizadas
-- **Spring Boot 4.0** con Spring Security
-- **H2 Database** (base de datos en memoria)
-- **JPA/Hibernate** para persistencia
-- **Form Login** para autenticación (con cookies de sesión)
-
-### Estructura de archivos principales
-
-```
-src/main/java/app/ejemplo02/
-├── config/
-│   └── SecurityConfig.java      # Configuración de seguridad
-├── controller/
-│   ├── TestController.java      # Endpoints de prueba (público/autenticado)
-│   ├── SessionController.java   # Gestión de sesiones
-│   └── EjemplosSessionController.java  # Ejemplos prácticos
-├── models/
-│   └── UserEntity.java          # Entidad de usuario
-├── repository/
-│   └── UserRepository.java      # Repositorio JPA
-├── service/
-│   └── UserService.java         # Servicio de usuarios
-└── user/
-    └── DbUserDetailsService.java # Carga usuarios desde BD
-```
-
-### Ejecutar el proyecto
-
-```bash
-./gradlew bootRun
-```
-
-La aplicación estará en: `http://localhost:8080`
-
----
-
-## 👤 Usuarios de Prueba
-
-| Usuario | Contraseña | Rol |
-|---------|------------|-----|
-| `user` | `password` | ROLE_USER |
-| `admin` | `admin123` | ROLE_ADMIN |
-
----
-
-## 🔄 Cómo Funciona la Autenticación
 
 ### Flujo de autenticación con sesión
 
+## 🚦 Endpoints Disponibles
+  |                              |                          |
+| Método | Endpoint                              | Descripción                        | Autenticación |
+|--------|---------------------------------------|------------------------------------|---------------|
+| POST   | `/api/auth/login`                     | Login con usuario y contraseña     | No            |
+| GET    | `/api/auth/me`                        | Info del usuario autenticado       | Sí            |
+| POST   | `/ejemplos/carrito/agregar`           | Añadir producto al carrito         | Sí            |
+| GET    | `/ejemplos/carrito/ver`               | Ver el carrito actual              | Sí            |
+| DELETE | `/ejemplos/carrito/vaciar`            | Vaciar el carrito                  | Sí            |
+| GET    | `/test/public`                        | Endpoint público                   | No            |
+| GET    | `/test/private`                       | Endpoint privado                   | Sí            |
 ```
-Cliente                    Spring Security              Servidor
-  |                              |                          |
-  |---(1) Login con user:password--->                       |
-  |                              |                          |
-  |                    (2) Valida credenciales en BD        |
-  |                              |                          |
-  |                    (3) Crea objeto Authentication       |
-  |                              |                          |
-  |                    (4) Guarda en SecurityContext        |
-  |                              |                          |
-  |                    (5) Almacena en HttpSession -------->|
-  |                              |                          |
-  |<--(6) Responde con Cookie: JSESSIONID=abc123-----------|
-  |                              |                          |
-  |---(7) Siguientes peticiones envían JSESSIONID--------->|
-  |                              |                          |
-  |                    (8) Recupera SecurityContext <-------|
-  |                              |                          |
-  |<--(9) Usuario ya autenticado (sin pedir credenciales)--|
-```
-
-### ¿Qué guarda Spring Security en la sesión?
-
-Cuando te autenticas, Spring Security guarda un objeto `SecurityContext` en la sesión bajo la clave `SPRING_SECURITY_CONTEXT`. Este contiene:
-
-- **Authentication**: Objeto con tu información de usuario
-  - `name`: Tu username
-  - `authorities`: Tus roles (ROLE_USER, ROLE_ADMIN)
-  - `authenticated`: Si estás autenticado (true/false)
-  - `credentials`: Se elimina después del login por seguridad
-
 ---
 
-## 🍪 Sesiones y Cookies: Conceptos Fundamentales
+## 🛒 Gestión de Carrito y Sesiones
+- **Authentication**: Objeto con tu información de usuario
+- El carrito de compras se almacena en la sesión HTTP del usuario.
+- Cada usuario autenticado tiene su propio carrito.
+- Si la sesión expira o se cierra, el carrito se pierde.
+### ¿Se puede configurar la expiración de la cookie de sesión?
+Sí, en Spring Boot puedes configurar el tiempo de expiración de la sesión en `application.properties`:
 
-### ¿Qué es una Sesión HTTP?
-
-Una **sesión HTTP** es un mecanismo que permite al servidor recordar información sobre un usuario a través de múltiples peticiones HTTP. HTTP es un protocolo **stateless** (sin estado), lo que significa que cada petición es independiente y el servidor no recuerda automáticamente al usuario entre peticiones.
-
-**Problema sin sesiones:**
-- Cada petición requiere autenticación (ej. enviar usuario/contraseña)
-- No se puede mantener estado (carrito de compras, preferencias, etc.)
-- Experiencia de usuario pobre
-
-**Solución con sesiones:**
-- El servidor asigna un ID único a cada usuario
-- Este ID se envía en cada petición (vía cookie)
-- El servidor recupera el estado del usuario usando ese ID
-
-### ¿Qué es una Cookie?
-
-Una **cookie** es un pequeño archivo de texto que el servidor envía al navegador del cliente. Contiene pares clave-valor y se almacena en el navegador.
-
-**Estructura típica de una cookie:**
-```
-Nombre: JSESSIONID
-Valor: ABC123DEF456GHI789
-Dominio: localhost
-Path: /
-Expires/Max-Age: Session (o fecha específica)
-Secure: false (true en HTTPS)
-HttpOnly: true (no accesible desde JavaScript)
-```
-
-### Cómo Funcionan las Sesiones con Cookies
-
-```
-1. Usuario hace login
-   Cliente → Servidor: POST /login (username/password)
-
-2. Servidor valida credenciales
-   - Crea HttpSession
-   - Guarda datos en sesión
-   - Envía cookie JSESSIONID
-
-3. Cliente recibe cookie
-   - Navegador la almacena automáticamente
-
-4. Peticiones subsiguientes
-   Cliente → Servidor: GET /api/data + Cookie: JSESSIONID=ABC123...
-
-5. Servidor recupera sesión
-   - Usa JSESSIONID para encontrar HttpSession
-   - Accede a datos guardados
-```
-
-### Tipos de Cookies
-
-| Tipo | Descripción | Ejemplo |
-|------|-------------|---------|
-| **Session Cookies** | Se eliminan al cerrar navegador | JSESSIONID |
-| **Persistent Cookies** | Tienen fecha de expiración | "Recordarme" |
-| **Secure Cookies** | Solo se envían por HTTPS | Para producción |
-| **HttpOnly Cookies** | No accesibles desde JavaScript | JSESSIONID |
-| **SameSite Cookies** | Controlan envío cross-site | Lax, Strict, None |
-
-### Utilidades de las Sesiones y Cookies
-
-#### 1. **Autenticación y Autorización**
-- Mantener usuario logueado entre peticiones
-- Recordar roles y permisos
-- Evitar re-autenticación constante
-
-#### 2. **Estado de la Aplicación**
-- Carrito de compras
-- Preferencias de usuario (idioma, tema)
-- Formularios multi-paso (wizard)
-- Historial de navegación
-
-#### 3. **Personalización**
-- Contenido personalizado
-- Recomendaciones basadas en comportamiento
-- Configuraciones guardadas
-
-#### 4. **Seguridad**
-- CSRF tokens
-- Rate limiting por sesión
-- Tracking de actividad sospechosa
-
-#### 5. **Analytics y Tracking**
-- Seguimiento de usuario
-- Métricas de uso
-- A/B testing
-
-### Ventajas de las Sesiones
-
-✅ **Fácil de implementar**: Spring Boot lo maneja automáticamente  
-✅ **Estado compartido**: Datos accesibles en toda la aplicación  
-✅ **Seguro**: Datos en servidor, no en cliente  
-✅ **Escalable**: Para aplicaciones pequeñas/medianas  
-
-### Desventajas de las Sesiones
-
-❌ **Consumo de memoria**: Cada sesión ocupa RAM en servidor  
-❌ **Escalabilidad**: Problemas con múltiples servidores (sticky sessions o Redis)  
-❌ **Timeout**: Sesiones expiran, usuarios pierden estado  
-❌ **No stateless**: Dificulta APIs para móviles/SPAs  
-
-### Alternativas a las Sesiones
-
-#### JWT (JSON Web Tokens)
-- **Stateless**: Todo el estado en el token
-- **Escalable**: No ocupa memoria en servidor
-- **Cross-platform**: Funciona en móviles/web
-- **Desventaja**: No se puede invalidar fácilmente
-
-#### OAuth 2.0 / OpenID Connect
-- **Estándar**: Para autenticación externa
-- **Seguro**: Tokens de corta duración
-- **Complejo**: Requiere proveedor de identidad
-
-### Configuración de Sesiones en Spring Boot
-
-#### Timeout de Sesión
-```properties
-# application.properties
-server.servlet.session.timeout=30m  # 30 minutos
-```
-
-#### Cookies Seguras
-```java
-// SecurityConfig.java
-.sessionManagement(session -> session
-    .sessionFixation().migrateSession()
-    .cookie().secure(true)  // Solo HTTPS
-    .httpOnly(true)         // No JavaScript
-    .sameSite("Lax")        // Control cross-site
-)
-```
-
-#### Persistencia de Sesión (Redis)
-```properties
-# Para producción con múltiples servidores
-spring.session.store-type=redis
-spring.redis.host=localhost
-spring.redis.port=6379
-```
-
-### Buenas Prácticas
-
-#### Para Cookies
-- **Usa HttpOnly**: Previene ataques XSS
-- **Secure en producción**: Solo HTTPS
-- **SameSite apropiado**: Evita CSRF
-- **Tamaño limitado**: < 4KB por cookie
-
-#### Para Sesiones
-- **Timeout razonable**: 30min-2h según caso
-- **Limpieza**: Invalida sesiones en logout
-- **Monitoreo**: Revisa uso de memoria
-- **Backup**: Persistencia para recuperación
-
-#### Para Seguridad
-- **Regenera ID**: Después de login (session fixation)
-- **Valida origen**: CORS configurado
-- **Auditoría**: Log de accesos importantes
-
-### Ejemplos Prácticos de Uso
-
-#### Carrito de Compras
-```java
-@PostMapping("/carrito/agregar")
-public String agregarProducto(HttpSession session, String producto) {
-    List<String> carrito = (List<String>) session.getAttribute("carrito");
-    if (carrito == null) carrito = new ArrayList<>();
-    carrito.add(producto);
-    session.setAttribute("carrito", carrito);
-    return "Producto agregado";
-}
-```
-
-#### Preferencias de Usuario
-```java
-@PostMapping("/preferencias/idioma")
-public String cambiarIdioma(HttpSession session, String idioma) {
-    session.setAttribute("idioma", idioma);
-    return "Idioma guardado";
-}
-```
-
-#### Wizard Multi-Paso
-```java
-@PostMapping("/registro/paso1")
-public String paso1(HttpSession session, String nombre, String email) {
-    session.setAttribute("registro.nombre", nombre);
-    session.setAttribute("registro.email", email);
-    return "Paso 1 completado";
-}
-```
+## 💻 Ejemplos Prácticos (curl, Postman, Angular)
+server.servlet.session.timeout=30m
+### Usando curl (simulación de navegador con cookies)
 
 ### Depuración de Sesiones
-
-#### Ver Cookies en Navegador
+# 1. Login y guarda la cookie de sesión
+curl -c cookies.txt -X POST -H "Content-Type: application/json" -d '{"username":"user","password":"password"}' http://localhost:8080/api/auth/login
 - Chrome: DevTools → Application → Cookies
-- Firefox: DevTools → Storage → Cookies
-
+# 2. Añadir producto al carrito (usando la cookie de sesión)
+curl -b cookies.txt -X POST "http://localhost:8080/ejemplos/carrito/agregar?producto=Laptop&cantidad=1"
 #### Ver Sesión en Servidor
-```java
+# 3. Ver el carrito
 @GetMapping("/debug/session")
 public Map<String, Object> debugSession(HttpSession session) {
-    Map<String, Object> info = new HashMap<>();
+# 4. Vaciar el carrito
     info.put("id", session.getId());
     info.put("creationTime", new Date(session.getCreationTime()));
     info.put("lastAccessedTime", new Date(session.getLastAccessedTime()));
-    info.put("maxInactiveInterval", session.getMaxInactiveInterval());
-    
-    // Atributos de la sesión
-    Enumeration<String> attrs = session.getAttributeNames();
-    Map<String, Object> attributes = new HashMap<>();
+### Usando Postman
     while (attrs.hasMoreElements()) {
-        String key = attrs.nextElement();
-        attributes.put(key, session.getAttribute(key));
-    }
-    info.put("attributes", attributes);
-## 📡 Endpoints Disponibles
-
+1. Haz una petición POST a `/api/auth/login` con el body:
+   ```json
+   {
+     "username": "user",
+     "password": "password"
+   }
+   ```
+2. Postman guardará la cookie de sesión automáticamente.
+3. Realiza las siguientes peticiones (no necesitas añadir la cookie manualmente):
+   - POST `/ejemplos/carrito/agregar?producto=Mouse&cantidad=2`
+   - GET `/ejemplos/carrito/ver`
+   - DELETE `/ejemplos/carrito/vaciar`
+4. Puedes ver las cookies en la pestaña "Cookies" de Postman (abajo a la derecha en la ventana de la petición).
 ### Endpoints de Prueba (`/test/*`)
-
+### Usando Angular (ejemplo básico de integración)
 | Método | Endpoint | Acceso | Descripción |
-|--------|----------|--------|-------------|
-| GET | `/test/public` | Público | No requiere autenticación |
-| GET | `/test/authenticated` | Autenticado | Requiere login |
+```typescript
+// auth.service.ts
+login(username: string, password: string) {
+  return this.http.post('/api/auth/login', { username, password }, { withCredentials: true });
+}
 | GET | `/test/me` | Autenticado | Información del usuario actual |
+// carrito.service.ts
+agregarProducto(producto: string, cantidad: number) {
+  return this.http.post(`/ejemplos/carrito/agregar?producto=${producto}&cantidad=${cantidad}`, {}, { withCredentials: true });
+}
+verCarrito() {
+  return this.http.get('/ejemplos/carrito/ver', { withCredentials: true });
+}
+vaciarCarrito() {
+  return this.http.delete('/ejemplos/carrito/vaciar', { withCredentials: true });
+}
+```
 
-### Endpoints de Sesión (`/session/*`)
-
-| Método | Endpoint | Descripción |
-|--------|----------|-------------|
-| GET | `/session/info` | Información de la sesión actual |
-| GET | `/session/attributes` | Lista todos los atributos de la sesión |
-| POST | `/session/attribute?key=x&value=y` | Guarda un atributo en la sesión |
-| GET | `/session/attribute/{key}` | Obtiene un atributo específico |
+> **Nota:** Es importante usar `{ withCredentials: true }` en Angular para que se envíen las cookies de sesión.
 | GET | `/session/timeout` | Tiempo de vida de la sesión |
 | POST | `/session/logout` | Cierra la sesión (logout) |
 
@@ -665,7 +405,16 @@ export class CarritoService {
   constructor(private http: HttpClient) { }
 
   agregarProducto(producto: string, cantidad: number): Observable<any> {
-    return this.http.post(`${this.apiUrl}/ejemplos/carrito/agregar`, null, {
+---
+
+## 📝 Notas para el alumno
+
+- Las sesiones y cookies son fundamentales para mantener el estado del usuario en aplicaciones web.
+- El backend puede ser consumido por cualquier frontend (Angular, React, Postman, curl, etc.) siempre que gestione correctamente las cookies de sesión.
+- Si tienes problemas de autenticación, revisa que las cookies se estén enviando correctamente en cada petición.
+- Puedes modificar la duración de la sesión en `application.properties`.
+
+---
       params: { producto, cantidad: cantidad.toString() },
       withCredentials: true
     });
