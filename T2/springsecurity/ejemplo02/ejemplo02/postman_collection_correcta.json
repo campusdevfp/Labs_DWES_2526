@@ -1,0 +1,340 @@
+{
+  "info": {
+    "name": "Ejemplo02 API - Spring Security con Sesiones",
+    "description": "Colección completa para probar todos los endpoints de la aplicación Spring Security con sesiones HTTP",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Autenticación",
+      "item": [
+        {
+          "name": "Endpoint Público",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/public",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "public"]
+            },
+            "description": "Endpoint público accesible sin autenticación"
+          }
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"username\":\"user\",\"password\":\"password\"}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Iniciar sesión con credenciales"
+          }
+        },
+        {
+          "name": "Info Usuario (Me)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "me"]
+            },
+            "description": "Obtener información del usuario autenticado"
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "logout"]
+            },
+            "description": "Cerrar sesión"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Pruebas",
+      "item": [
+        {
+          "name": "Test Público",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/test/public",
+              "host": ["{{baseUrl}}"],
+              "path": ["test", "public"]
+            },
+            "description": "Endpoint de prueba público"
+          }
+        },
+        {
+          "name": "Test Privado",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/test/private",
+              "host": ["{{baseUrl}}"],
+              "path": ["test", "private"]
+            },
+            "description": "Endpoint de prueba que requiere autenticación"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Gestión de Sesión",
+      "item": [
+        {
+          "name": "Info de Sesión",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/session/info",
+              "host": ["{{baseUrl}}"],
+              "path": ["session", "info"]
+            },
+            "description": "Obtener información detallada de la sesión"
+          }
+        },
+        {
+          "name": "Atributos de Sesión",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/session/attributes",
+              "host": ["{{baseUrl}}"],
+              "path": ["session", "attributes"]
+            },
+            "description": "Listar todos los atributos en la sesión"
+          }
+        },
+        {
+          "name": "Guardar Atributo",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/session/attribute?key=miDato&value=hola",
+              "host": ["{{baseUrl}}"],
+              "path": ["session", "attribute"],
+              "query": [
+                {
+                  "key": "key",
+                  "value": "miDato"
+                },
+                {
+                  "key": "value",
+                  "value": "hola"
+                }
+              ]
+            },
+            "description": "Guardar un atributo personalizado en la sesión"
+          }
+        },
+        {
+          "name": "Obtener Atributo",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/session/attribute/miDato",
+              "host": ["{{baseUrl}}"],
+              "path": ["session", "attribute", "miDato"]
+            },
+            "description": "Obtener un atributo específico de la sesión"
+          }
+        },
+        {
+          "name": "Configurar Timeout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/session/timeout?segundos=600",
+              "host": ["{{baseUrl}}"],
+              "path": ["session", "timeout"],
+              "query": [
+                {
+                  "key": "segundos",
+                  "value": "600"
+                }
+              ]
+            },
+            "description": "Configurar el timeout de la sesión en segundos"
+          }
+        },
+        {
+          "name": "Agregar al Carrito",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/session/carrito/agregar?producto=Laptop&cantidad=1",
+              "host": ["{{baseUrl}}"],
+              "path": ["session", "carrito", "agregar"],
+              "query": [
+                {
+                  "key": "producto",
+                  "value": "Laptop"
+                },
+                {
+                  "key": "cantidad",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Agregar un producto al carrito de la sesión"
+          }
+        },
+        {
+          "name": "Ver Carrito",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/session/carrito/ver",
+              "host": ["{{baseUrl}}"],
+              "path": ["session", "carrito", "ver"]
+            },
+            "description": "Ver el contenido del carrito"
+          }
+        },
+        {
+          "name": "Vaciar Carrito",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/session/carrito/vaciar",
+              "host": ["{{baseUrl}}"],
+              "path": ["session", "carrito", "vaciar"]
+            },
+            "description": "Vaciar el carrito de compras"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ejemplos",
+      "item": [
+        {
+          "name": "Agregar al Carrito (Ejemplo)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/ejemplos/carrito/agregar?producto=Mouse&cantidad=2",
+              "host": ["{{baseUrl}}"],
+              "path": ["ejemplos", "carrito", "agregar"],
+              "query": [
+                {
+                  "key": "producto",
+                  "value": "Mouse"
+                },
+                {
+                  "key": "cantidad",
+                  "value": "2"
+                }
+              ]
+            },
+            "description": "Agregar producto al carrito (ejemplo)"
+          }
+        },
+        {
+          "name": "Ver Carrito (Ejemplo)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/ejemplos/carrito/ver",
+              "host": ["{{baseUrl}}"],
+              "path": ["ejemplos", "carrito", "ver"]
+            },
+            "description": "Ver carrito (ejemplo)"
+          }
+        },
+        {
+          "name": "Vaciar Carrito (Ejemplo)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/ejemplos/carrito/vaciar",
+              "host": ["{{baseUrl}}"],
+              "path": ["ejemplos", "carrito", "vaciar"]
+            },
+            "description": "Vaciar carrito (ejemplo)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Depuración",
+      "item": [
+        {
+          "name": "Listar Usuarios",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/debug/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["debug", "users"]
+            },
+            "description": "Listar todos los usuarios de la base de datos"
+          }
+        },
+        {
+          "name": "Resetear Password Admin",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/debug/admin/reset?password=nueva123",
+              "host": ["{{baseUrl}}"],
+              "path": ["debug", "admin", "reset"],
+              "query": [
+                {
+                  "key": "password",
+                  "value": "nueva123"
+                }
+              ]
+            },
+            "description": "Cambiar la contraseña del usuario admin"
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    }
+  ]
+}
+

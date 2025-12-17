@@ -1,5 +1,7 @@
 package app.ejemplo02.controller;
 
+import app.ejemplo02.dto.UsuarioInfo;
+import app.ejemplo02.util.SecurityUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.HttpStatus;
@@ -8,12 +10,12 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+
+// Endpoint disponibles: /api/auth/login , /api/auth/logout, /api/auth/me, /api/auth/public
 
 @RestController
 @RequestMapping("/api/auth")
@@ -44,24 +46,17 @@ public class AuthController {
                     )
             );
 
-            // Guardar en el SecurityContext
-            SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
-            securityContext.setAuthentication(authentication);
-            SecurityContextHolder.setContext(securityContext);
+            // Centralizar guardado del SecurityContext en la sesión
+            SecurityUtils.setAuthenticationInSession(request, authentication);
 
-            // Crear sesión y guardar el contexto de seguridad
-            HttpSession session = request.getSession(true);
-            session.setAttribute(
-                    HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY,
-                    securityContext
-            );
+            HttpSession session = request.getSession(false);
 
             return ResponseEntity.ok(Map.of(
                     "mensaje", "✅ Login exitoso",
                     "usuario", authentication.getName(),
                     "roles", authentication.getAuthorities().stream()
-                            .map(a -> a.getAuthority()).toList(),
-                    "sessionId", session.getId()
+                            .map(GrantedAuthority::getAuthority).toList(),
+                    "sessionId", session != null ? session.getId() : null
             ));
 
         } catch (AuthenticationException e) {
@@ -78,16 +73,37 @@ public class AuthController {
      */
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletRequest request) {
-        HttpSession session = request.getSession(false);
-        if (session != null) {
-            session.invalidate();
-        }
-        SecurityContextHolder.clearContext();
-
+        SecurityUtils.clearAuthentication(request);
         return ResponseEntity.ok(Map.of("mensaje", "✅ Sesión cerrada exitosamente"));
+    }
+
+    // ----------------- endpoints públicos y de prueba -----------------
+
+    @GetMapping("/public")
+    public ResponseEntity<String> publico() {
+        return ResponseEntity.ok("Este es un endpoint público - accesible sin autenticación");
+    }
+
+    @GetMapping("/authenticated")
+    public ResponseEntity<String> autenticado(Authentication authentication) {
+        if (authentication == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No autenticado");
+        }
+        return ResponseEntity.ok("¡Hola " + authentication.getName() + " Te has autenticado con éxito!");
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<UsuarioInfo> me(Authentication authentication) {
+        if (authentication == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        UsuarioInfo info = new UsuarioInfo(
+                authentication.getName(),
+                authentication.getAuthorities().stream().map(a -> a.getAuthority()).toList()
+        );
+        return ResponseEntity.ok(info);
     }
 
     // DTO para la petición de login
     public record LoginRequest(String username, String password) {}
 }
-

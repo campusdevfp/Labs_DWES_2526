@@ -1,0 +1,1046 @@
+{
+  "info": {
+    "name": "ejemplo02 - Todos los Endpoints",
+    "_postman_id": "b3a5a1b2-6f7e-4c2a-9f0d-123456789abc",
+    "description": "Colección completa para probar todos los endpoints de la aplicación ejemplo02.\n- Incluye Auth, Debug y Session.\n- Ejecuta en orden: primero Auth para login, luego los demás.\n- Variables: baseUrl (http://localhost:8080), JSESSIONID (se guarda en login).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "JSESSIONID",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "01 - Public (GET)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/public",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "auth", "public"]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('status 200', function () { pm.response.to.have.status(200); });"]
+              }
+            }
+          ]
+        },
+        {
+          "name": "02 - Login (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"username\": \"user\", \"password\": \"password\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "auth", "login"]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const setCookie = pm.response.headers.get('set-cookie');",
+                  "  if (setCookie) {",
+                  "    const match = setCookie.match(/JSESSIONID=([^;]+)/);",
+                  "    if (match && match[1]) {",
+                  "      pm.collectionVariables.set('JSESSIONID', match[1]);",
+                  "      console.log('JSESSIONID guardado:', match[1]);",
+                  "    }",
+                  "  }",
+                  "}",
+                  "pm.test('login status 200', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "03 - Authenticated (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{JSESSIONID}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/authenticated",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "auth", "authenticated"]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('status 200', function () { pm.response.to.have.status(200); });"]
+              }
+            }
+          ]
+        },
+        {
+          "name": "04 - Me (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{JSESSIONID}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "auth", "me"]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('status 200', function () { pm.response.to.have.status(200); });"]
+              }
+            }
+          ]
+        },
+        {
+          "name": "05 - Logout (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{JSESSIONID}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/logout",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "auth", "logout"]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('logout status 200', function () { pm.response.to.have.status(200); });",
+                  "pm.collectionVariables.unset('JSESSIONID');"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Debug",
+      "item": [
+        {
+          "name": "Users (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{JSESSIONID}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/debug/users",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["debug", "users"]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('status 200', function () { pm.response.to.have.status(200); });"]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Admin Reset Password (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{JSESSIONID}}"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "password",
+                  "value": "admin123",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/debug/admin/reset",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["debug", "admin", "reset"]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('status 200', function () { pm.response.to.have.status(200); });"]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Session",
+      "item": [
+        {
+          "name": "Info (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{JSESSIONID}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/session/info",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["session", "info"]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('status 200', function () { pm.response.to.have.status(200); });"]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Attributes (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{JSESSIONID}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/session/attributes",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["session", "attributes"]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('status 200', function () { pm.response.to.have.status(200); });"]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Attribute Save (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{JSESSIONID}}"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "key",
+                  "value": "testKey",
+                  "type": "text"
+                },
+                {
+                  "key": "value",
+                  "value": "testValue",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/session/attribute",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["session", "attribute"]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('status 200', function () { pm.response.to.have.status(200); });"]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Attribute Get (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{JSESSIONID}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/session/attribute/testKey",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["session", "attribute", "testKey"]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('status 200', function () { pm.response.to.have.status(200); });"]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Timeout Get (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{JSESSIONID}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/session/timeout",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["session", "timeout"]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('status 200', function () { pm.response.to.have.status(200); });"]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Timeout Set (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{JSESSIONID}}"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "segundos",
+                  "value": "600",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/session/timeout",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["session", "timeout"]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('status 200', function () { pm.response.to.have.status(200); });"]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Carrito Agregar (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{JSESSIONID}}"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "producto",
+                  "value": "manzana",
+                  "type": "text"
+                },
+                {
+                  "key": "cantidad",
+                  "value": "5",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/session/carrito/agregar",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["session", "carrito", "agregar"]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('status 200', function () { pm.response.to.have.status(200); });"]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Carrito Ver (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{JSESSIONID}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/session/carrito/ver",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["session", "carrito", "ver"]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('status 200', function () { pm.response.to.have.status(200); });"]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Carrito Vaciar (DELETE)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{JSESSIONID}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/session/carrito/vaciar",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["session", "carrito", "vaciar"]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('status 200', function () { pm.response.to.have.status(200); });"]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Preferencias Idioma (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{JSESSIONID}}"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "idioma",
+                  "value": "en",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/session/preferencias/idioma",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["session", "preferencias", "idioma"]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('status 200', function () { pm.response.to.have.status(200); });"]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Preferencias Tema (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{JSESSIONID}}"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "tema",
+                  "value": "oscuro",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/session/preferencias/tema",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["session", "preferencias", "tema"]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('status 200', function () { pm.response.to.have.status(200); });"]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Preferencias Ver (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{JSESSIONID}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/session/preferencias",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["session", "preferencias"]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('status 200', function () { pm.response.to.have.status(200); });"]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Historial Agregar (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{JSESSIONID}}"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "pagina",
+                  "value": "/home",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/session/historial/agregar",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["session", "historial", "agregar"]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('status 200', function () { pm.response.to.have.status(200); });"]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Historial Ver (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{JSESSIONID}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/session/historial",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["session", "historial"]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('status 200', function () { pm.response.to.have.status(200); });"]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Registro Paso1 (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{JSESSIONID}}"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "nombre",
+                  "value": "Juan",
+                  "type": "text"
+                },
+                {
+                  "key": "email",
+                  "value": "juan@example.com",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/session/registro/paso1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["session", "registro", "paso1"]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('status 200', function () { pm.response.to.have.status(200); });"]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Registro Paso2 (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{JSESSIONID}}"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "telefono",
+                  "value": "123456789",
+                  "type": "text"
+                },
+                {
+                  "key": "ciudad",
+                  "value": "Madrid",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/session/registro/paso2",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["session", "registro", "paso2"]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('status 200', function () { pm.response.to.have.status(200); });"]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Registro Paso3 (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{JSESSIONID}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/session/registro/paso3",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["session", "registro", "paso3"]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('status 200', function () { pm.response.to.have.status(200); });"]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Registro Estado (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{JSESSIONID}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/session/registro/estado",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["session", "registro", "estado"]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('status 200', function () { pm.response.to.have.status(200); });"]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Flash Mensaje (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{JSESSIONID}}"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "mensaje",
+                  "value": "Hola mundo",
+                  "type": "text"
+                },
+                {
+                  "key": "tipo",
+                  "value": "success",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/session/flash/mensaje",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["session", "flash", "mensaje"]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('status 200', function () { pm.response.to.have.status(200); });"]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Flash Obtener (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{JSESSIONID}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/session/flash/obtener",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["session", "flash", "obtener"]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('status 200', function () { pm.response.to.have.status(200); });"]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Visitas (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{JSESSIONID}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/session/visitas",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["session", "visitas"]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('status 200', function () { pm.response.to.have.status(200); });"]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Temporal Guardar (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{JSESSIONID}}"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "clave",
+                  "value": "tempKey",
+                  "type": "text"
+                },
+                {
+                  "key": "valor",
+                  "value": "tempValue",
+                  "type": "text"
+                },
+                {
+                  "key": "segundos",
+                  "value": "60",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/session/temporal/guardar",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["session", "temporal", "guardar"]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('status 200', function () { pm.response.to.have.status(200); });"]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Temporal Obtener (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{JSESSIONID}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/session/temporal/obtener/tempKey",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["session", "temporal", "obtener", "tempKey"]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('status 200', function () { pm.response.to.have.status(200); });"]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+

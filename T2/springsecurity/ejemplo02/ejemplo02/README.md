@@ -1,586 +1,929 @@
-#  Spring Security con Sesiones HTTP - Guía Completa
+# Spring Security con Sesiones HTTP - Guía Completa
 
-##  Índice
+Esta aplicación es un ejemplo práctico de Spring Boot con Spring Security, enfocada en la gestión de sesiones HTTP. Incluye autenticación, autorización, manejo de sesiones, carrito de compras y otros ejemplos reales.
 
-1. [Flujo de autenticación con sesión](#flujo-de-autenticación-con-sesión)
-2. [Endpoints Disponibles](#-endpoints-disponibles)
-3. [Gestión de Carrito y Sesiones](#-gestión-de-carrito-y-sesiones)
-4. [Ejemplos Prácticos (curl, Postman, Angular)](#-ejemplos-prácticos-curl-postman-angular)
-5. [Gestión de Sesiones](#-gestión-de-sesiones)
-6. [Ejemplos Prácticos](#-ejemplos-prácticos)
-7. [Configuración de Seguridad](#-configuración-de-seguridad)
-8. [Consola H2 (Ver Base de Datos)](#-consola-h2-ver-base-de-datos)
-9. [Conceptos Clave](#-conceptos-clave)
-10. [Consideraciones](#-consideraciones)
-11. [Integración con Angular](#-integración-con-angular)
+## Índice
 
----
-
-### Flujo de autenticación con sesión
-
-## 🚦 Endpoints Disponibles
-
-| Método | Endpoint                        | Descripción detallada                                                                 | Autenticación |
-|--------|----------------------------------|---------------------------------------------------------------------------------------|---------------|
-| POST   | `/api/auth/login`               | Inicia sesión. Recibe usuario y contraseña, y crea la sesión si son correctos.        | No            |
-| GET    | `/api/auth/me`                  | Devuelve información del usuario autenticado (nombre, roles, etc).                    | Sí            |
-| POST   | `/ejemplos/carrito/agregar`     | Añade un producto al carrito de la sesión actual.                                     | Sí            |
-| GET    | `/ejemplos/carrito/ver`         | Muestra el contenido actual del carrito de la sesión.                                 | Sí            |
-| DELETE | `/ejemplos/carrito/vaciar`      | Vacía el carrito de la sesión actual.                                                 | Sí            |
-| GET    | `/test/public`                  | Endpoint público de prueba, accesible sin autenticación.                              | No            |
-| GET    | `/test/private`                 | Endpoint privado de prueba, solo accesible si estás autenticado.                      | Sí            |
+1. [Descripción General](#descripción-general)
+2. [Requisitos](#requisitos)
+3. [Instalación y Ejecución](#instalación-y-ejecución)
+4. [Estructura del Proyecto](#estructura-del-proyecto)
+5. [Endpoints Disponibles](#endpoints-disponibles)
+6. [Configuración de Seguridad](#configuración-de-seguridad)
+7. [Base de Datos y Usuarios](#base-de-datos-y-usuarios)
+8. [Ejemplos de Uso](#ejemplos-de-uso)
+9. [Conceptos Clave](#conceptos-clave)
+10. [Solución de Problemas](#solución-de-problemas)
 
 ---
 
-### Explicación de cada endpoint
+## Descripción General
 
-- **POST `/api/auth/login`**: Permite iniciar sesión enviando un JSON con `username` y `password`. Si las credenciales son correctas, se crea una sesión y se devuelve la cookie de sesión. Úsalo para autenticarte antes de acceder a recursos protegidos.
-  - Ejemplo de uso:
+Esta aplicación demuestra cómo implementar autenticación y autorización en Spring Boot usando Spring Security, con énfasis en el manejo de sesiones HTTP. Incluye:
+
+- **Autenticación REST**: Login/logout sin formularios HTML.
+- **Gestión de Sesiones**: Almacenamiento de datos por usuario (carrito, preferencias).
+- **Autorización**: Control de acceso basado en roles.
+- **Base de Datos H2**: Persistencia en memoria para desarrollo.
+- **Ejemplos Prácticos**: Carrito de compras, preferencias, historial, etc.
+
+La aplicación se ejecuta en `http://localhost:8080` y usa H2 como BD en memoria.
+
+---
+
+## Requisitos
+
+- **Java**: JDK 21 (o superior).
+- **Gradle**: Incluido en el proyecto (wrapper).
+- **IDE**: IntelliJ IDEA, Eclipse o VS Code (opcional).
+
+---
+
+## Instalación y Ejecución
+
+
+### Paso 1: Construir el Proyecto
+
+Ejecuta Gradle para descargar dependencias y compilar:
+
+```bash
+./gradlew build
+```
+
+### Paso 2: Ejecutar la Aplicación
+
+Inicia el servidor:
+
+```bash
+./gradlew bootRun
+```
+
+La aplicación estará disponible en `http://localhost:8080`.
+
+### Paso 3: Verificar que Funciona
+
+Abre en el navegador: `http://localhost:8080/test/public` (debería mostrar un mensaje público).
+
+Para acceder a la consola H2: `http://localhost:8080/h2-console` (usuario: `sa`, password: vacío).
+
+---
+
+## Estructura del Proyecto
+
+```
+src/
+├── main/
+│   ├── java/app/ejemplo02/
+│   │   ├── Ejemplo02Application.java          # Clase principal de Spring Boot
+│   │   ├── config/
+│   │   │   └── SecurityConfig.java            # Configuración de Spring Security
+│   │   ├── controller/                        # Controladores REST
+│   │   │   ├── AuthController.java            # Autenticación (login/logout)
+│   │   │   ├── DebugController.java           # Endpoints de depuración
+│   │   │   ├── SessionController.java         # Gestión de sesiones
+│   │   │   
+│   │   │   
+│   │   ├── dto/                               # Objetos de Transferencia de Datos
+│   │   │   ├── ItemCarrito.java               # DTO para items del carrito
+│   │   │   ├── SessionInfo.java               # DTO para info de sesión
+│   │   │   └── UsuarioInfo.java               # DTO para info de usuario
+│   │   ├── models/                            # Entidades JPA
+│   │   │   └── UserEntity.java                # Modelo de usuario
+│   │   ├── repository/                        # Repositorios de datos
+│   │   │   └── UserRepository.java            # Acceso a usuarios en BD
+│   │   ├── service/                           # Servicios de negocio
+│   │   │   └── UserService.java               # Lógica para usuarios
+│   │   ├── user/                              # Servicios de usuario para Security
+│   │   │   └── DbUserDetailsService.java      # Carga de usuarios para autenticación
+│   │   └── util/                              # Utilidades
+│   │       └── SecurityUtils.java             # Helpers para seguridad
+│   └── resources/
+│       ├── application.properties             # Configuración de la app
+│       └── data.sql                           # Datos iniciales (usuarios)
+└── test/
+    └── java/app/ejemplo02/
+        └── Ejemplo02ApplicationTests.java     # Tests básicos
+```
+
+### Explicación de Paquetes
+
+- **config**: Configuraciones (seguridad, BD).
+- **controller**: Manejan peticiones HTTP, definen endpoints.
+- **dto**: Estructuras de datos para respuestas JSON.
+- **models**: Entidades de BD (mapeadas con JPA).
+- **repository**: Interfaces para acceder a BD (usando Spring Data JPA).
+- **service**: Lógica de negocio (encriptación, validaciones).
+- **user**: Integración con Spring Security (carga de usuarios).
+- **util**: Funciones auxiliares.
+
+---
+
+## Endpoints Disponibles
+
+La aplicación expone varios endpoints agrupados por funcionalidad. Todos requieren autenticación excepto los marcados como "No".
+
+### 1. Endpoints de Autenticación (`/api/auth/*`)
+
+| Método | Endpoint              | Descripción | Autenticación |
+|--------|-----------------------|-------------|---------------|
+| GET    | `/api/auth/public`    | Mensaje público | No |
+| POST   | `/api/auth/login`     | Inicia sesión | No |
+| GET    | `/api/auth/me`        | Info del usuario | Sí |
+| POST   | `/api/auth/logout`    | Cierra sesión | Sí |
+
+#### Explicaciones Detalladas:
+
+- **GET `/api/auth/public`**:
+  - **Descripción**: Endpoint público accesible sin autenticación, usado para probar que el servidor responde.
+  - **Lógica**: Retorna un mensaje simple. No requiere sesión ni credenciales.
+  - **Respuesta**: `{"message": "Este es un endpoint público - accesible sin autenticación"}`
+  - **Ejemplo**:
     ```bash
-    curl -c cookies.txt -X POST -H "Content-Type: application/json" -d '{"username":"user","password":"password"}' http://localhost:8080/api/auth/login
+    curl http://localhost:8080/api/auth/public
     ```
 
-- **GET `/api/auth/me`**: Devuelve los datos del usuario actualmente autenticado (por ejemplo, nombre y roles). Útil para mostrar información del usuario en el frontend.
-  - Ejemplo de uso:
+- **POST `/api/auth/login`**:
+  - **Descripción**: Inicia sesión enviando username y password en JSON.
+  - **Lógica**: Usa `AuthenticationManager` para validar credenciales. Si es exitoso, guarda la autenticación en la sesión y retorna info del usuario. Si falla, retorna 401.
+  - **Parámetros**: Body JSON con `username` y `password`.
+  - **Respuesta**: JSON con mensaje, usuario, roles y sessionId.
+  - **Ejemplo**:
+    ```bash
+    curl -X POST -H "Content-Type: application/json" -d '{"username":"user","password":"password"}' http://localhost:8080/api/auth/login
+    ```
+
+- **GET `/api/auth/me`**:
+  - **Descripción**: Devuelve información del usuario actualmente autenticado.
+  - **Lógica**: Extrae datos de `Authentication` (username, roles) y los retorna en un DTO `UsuarioInfo`.
+  - **Respuesta**: JSON con username y lista de roles.
+  - **Ejemplo**:
     ```bash
     curl -b cookies.txt http://localhost:8080/api/auth/me
     ```
 
-- **POST `/ejemplos/carrito/agregar`**: Añade un producto al carrito de la sesión. Requiere parámetros `producto` y `cantidad` en la URL. El carrito se almacena en la sesión del usuario.
-  - Ejemplo de uso:
+- **POST `/api/auth/logout`**:
+  - **Descripción**: Cierra la sesión del usuario.
+  - **Lógica**: Llama a `SecurityUtils.clearAuthentication()` para invalidar sesión y limpiar contexto de seguridad.
+  - **Respuesta**: Mensaje de confirmación.
+  - **Ejemplo**:
     ```bash
-    curl -b cookies.txt -X POST "http://localhost:8080/ejemplos/carrito/agregar?producto=Laptop&cantidad=1"
+    curl -b cookies.txt -X POST http://localhost:8080/api/auth/logout
     ```
 
-- **GET `/ejemplos/carrito/ver`**: Muestra el contenido actual del carrito asociado a la sesión. Útil para que el usuario vea qué productos ha añadido.
-  - Ejemplo de uso:
-    ```bash
-    curl -b cookies.txt http://localhost:8080/ejemplos/carrito/ver
-    ```
+### 2. Endpoints de Prueba (`/test/*`)
 
-- **DELETE `/ejemplos/carrito/vaciar`**: Elimina todos los productos del carrito de la sesión actual. Úsalo para vaciar el carrito antes de una nueva compra.
-  - Ejemplo de uso:
-    ```bash
-    curl -b cookies.txt -X DELETE http://localhost:8080/ejemplos/carrito/vaciar
-    ```
+| Método | Endpoint          | Descripción | Autenticación |
+|--------|-------------------|-------------|---------------|
+| GET    | `/test/public`    | Endpoint público | No |
+| GET    | `/test/private`   | Endpoint privado | Sí |
 
-- **GET `/test/public`**: Endpoint de prueba accesible para cualquier usuario, sin autenticación. Útil para comprobar que el servidor responde.
-  - Ejemplo de uso:
+#### Explicaciones Detalladas:
+
+- **GET `/test/public`**:
+  - **Descripción**: Endpoint de prueba público.
+  - **Lógica**: Retorna un mensaje simple sin requerir autenticación.
+  - **Respuesta**: JSON con mensaje público.
+  - **Ejemplo**:
     ```bash
     curl http://localhost:8080/test/public
     ```
 
-- **GET `/test/private`**: Endpoint de prueba que solo responde si el usuario está autenticado. Útil para comprobar que la autenticación funciona.
-  - Ejemplo de uso:
+- **GET `/test/private`**:
+  - **Descripción**: Endpoint de prueba que requiere autenticación.
+  - **Lógica**: Verifica si el usuario está autenticado y retorna un saludo personalizado.
+  - **Respuesta**: Mensaje con nombre del usuario.
+  - **Ejemplo**:
     ```bash
     curl -b cookies.txt http://localhost:8080/test/private
     ```
 
----
+### 3. Endpoints de Sesión (`/session/*`)
 
-## Gestión de Carrito y Sesiones
+| Método | Endpoint                  | Descripción | Autenticación |
+|--------|---------------------------|-------------|---------------|
+| GET    | `/session/info`           | Info de sesión | Sí |
+| GET    | `/session/attributes`     | Atributos de sesión | Sí |
+| POST   | `/session/attribute`      | Guarda atributo | Sí |
+| GET    | `/session/attribute/{key}`| Obtiene atributo | Sí |
+| POST   | `/session/timeout`        | Configura timeout | Sí |
+| POST   | `/session/carrito/agregar`| Agrega al carrito | Sí |
+| GET    | `/session/carrito/ver`    | Ver carrito | Sí |
+| DELETE | `/session/carrito/vaciar` | Vacía carrito | Sí |
 
-- El carrito de compras se almacena en la sesión HTTP del usuario.
-- Cada usuario autenticado tiene su propio carrito.
-- Si la sesión expira o se cierra, el carrito se pierde.
+#### Explicaciones Detalladas:
 
-### Configuración de expiración de la sesión
-Puedes configurar el tiempo de expiración de la sesión en `application.properties`:
+- **GET `/session/info`**:
+  - **Descripción**: Devuelve información detallada de la sesión actual.
+  - **Lógica**: Extrae datos de `HttpSession` (ID, tiempos, usuario) y los retorna en `SessionInfo`.
+  - **Respuesta**: JSON con sessionId, username, roles, tiempos de creación/acceso.
+  - **Ejemplo**:
+    ```bash
+    curl -b cookies.txt http://localhost:8080/session/info
+    ```
 
-```properties
-server.servlet.session.timeout=30m
-```
+- **GET `/session/attributes`**:
+  - **Descripción**: Lista todos los atributos almacenados en la sesión.
+  - **Lógica**: Itera sobre `session.getAttributeNames()` y retorna un mapa con valores.
+  - **Respuesta**: JSON con atributos (incluyendo SecurityContext).
+  - **Ejemplo**:
+    ```bash
+    curl -b cookies.txt http://localhost:8080/session/attributes
+    ```
 
----
+- **POST `/session/attribute`**:
+  - **Descripción**: Guarda un atributo personalizado en la sesión.
+  - **Lógica**: Usa `session.setAttribute(key, value)`.
+  - **Parámetros**: `key` y `value` como query params.
+  - **Respuesta**: Mensaje de confirmación.
+  - **Ejemplo**:
+    ```bash
+    curl -b cookies.txt -X POST "http://localhost:8080/session/attribute?key=miDato&value=hola"
+    ```
 
-##  Ejemplos Prácticos (curl, Postman, Angular)
+- **GET `/session/attribute/{key}`**:
+  - **Descripción**: Obtiene un atributo específico de la sesión.
+  - **Lógica**: Retorna `session.getAttribute(key)` o 404 si no existe.
+  - **Respuesta**: Valor del atributo o error.
+  - **Ejemplo**:
+    ```bash
+    curl -b cookies.txt http://localhost:8080/session/attribute/miDato
+    ```
 
-### Usando curl (simulación de navegador con cookies)
+- **POST `/session/timeout`**:
+  - **Descripción**: Configura el timeout de la sesión en segundos.
+  - **Lógica**: Llama a `session.setMaxInactiveInterval(segundos)`.
+  - **Parámetros**: `segundos` como query param.
+  - **Respuesta**: Mensaje de confirmación.
+  - **Ejemplo**:
+    ```bash
+    curl -b cookies.txt -X POST "http://localhost:8080/session/timeout?segundos=600"
+    ```
 
-```bash
-# 1. Login y guarda la cookie de sesión
-curl -c cookies.txt -X POST -H "Content-Type: application/json" -d '{"username":"user","password":"password"}' http://localhost:8080/api/auth/login
+- **POST `/session/carrito/agregar`**:
+  - **Descripción**: Agrega un producto al carrito de la sesión.
+  - **Lógica**: Crea `ItemCarrito` y lo añade a la lista en sesión.
+  - **Parámetros**: `producto` y `cantidad`.
+  - **Respuesta**: Mensaje de éxito.
+  - **Ejemplo**:
+    ```bash
+    curl -b cookies.txt -X POST "http://localhost:8080/session/carrito/agregar?producto=Laptop&cantidad=1"
+    ```
 
-# 2. Añadir producto al carrito (usando la cookie de sesión)
-curl -b cookies.txt -X POST "http://localhost:8080/ejemplos/carrito/agregar?producto=Laptop&cantidad=1"
+- **GET `/session/carrito/ver`**:
+  - **Descripción**: Muestra el contenido del carrito.
+  - **Lógica**: Retorna la lista de items en sesión.
+  - **Respuesta**: JSON con items y total.
+  - **Ejemplo**:
+    ```bash
+    curl -b cookies.txt http://localhost:8080/session/carrito/ver
+    ```
 
-# 3. Ver el carrito
-curl -b cookies.txt http://localhost:8080/ejemplos/carrito/ver
+- **DELETE `/session/carrito/vaciar`**:
+  - **Descripción**: Vacía el carrito.
+  - **Lógica**: Remueve el atributo "carrito" de la sesión.
+  - **Respuesta**: Mensaje de confirmación.
+  - **Ejemplo**:
+    ```bash
+    curl -b cookies.txt -X DELETE http://localhost:8080/session/carrito/vaciar
+    ```
 
-# 4. Vaciar el carrito
-curl -b cookies.txt -X DELETE http://localhost:8080/ejemplos/carrito/vaciar
-```
+### 4. Endpoints de Ejemplos (`/ejemplos/*`)
 
-> Puedes ver las cookies en el navegador en: DevTools → Application → Cookies
+| Método | Endpoint                      | Descripción | Autenticación |
+|--------|-------------------------------|-------------|---------------|
+| POST   | `/ejemplos/carrito/agregar`   | Agrega producto | Sí |
+| GET    | `/ejemplos/carrito/ver`       | Ver carrito | Sí |
+| DELETE | `/ejemplos/carrito/vaciar`    | Vacía carrito | Sí |
 
----
+#### Explicaciones Detalladas:
 
-### Usando Postman
+- **POST `/ejemplos/carrito/agregar`**:
+  - **Descripción**: Agrega un producto al carrito (similar a `/session/carrito/agregar`).
+  - **Lógica**: Maneja lista en sesión, añade item.
+  - **Parámetros**: `producto`, `cantidad`.
+  - **Respuesta**: Mensaje de éxito.
+  - **Ejemplo**:
+    ```bash
+    curl -b cookies.txt -X POST "http://localhost:8080/ejemplos/carrito/agregar?producto=Mouse&cantidad=2"
+    ```
 
-1. Haz una petición POST a `/api/auth/login` con el body:
-   ```json
-   {
-     "username": "user",
-     "password": "password"
-   }
-   ```
-2. Postman guardará la cookie de sesión automáticamente.
-3. Realiza las siguientes peticiones (no necesitas añadir la cookie manualmente):
-   - POST `/ejemplos/carrito/agregar?producto=Mouse&cantidad=2`
-   - GET `/ejemplos/carrito/ver`
-   - DELETE `/ejemplos/carrito/vaciar`
-4. Puedes ver las cookies en la pestaña "Cookies" de Postman (abajo a la derecha en la ventana de la petición).
+- **GET `/ejemplos/carrito/ver`**:
+  - **Descripción**: Ver el carrito.
+  - **Lógica**: Retorna lista de items.
+  - **Respuesta**: JSON con items.
+  - **Ejemplo**:
+    ```bash
+    curl -b cookies.txt http://localhost:8080/ejemplos/carrito/ver
+    ```
 
----
+- **DELETE `/ejemplos/carrito/vaciar`**:
+  - **Descripción**: Vacía el carrito.
+  - **Lógica**: Remueve atributo de sesión.
+  - **Respuesta**: Mensaje.
+  - **Ejemplo**:
+    ```bash
+    curl -b cookies.txt -X DELETE http://localhost:8080/ejemplos/carrito/vaciar
+    ```
 
-### Usando Angular (ejemplo básico de integración)
+### 5. Endpoints de Depuración (`/debug/*`)
 
-```typescript
-// auth.service.ts
-login(username: string, password: string) {
-  return this.http.post('/api/auth/login', { username, password }, { withCredentials: true });
-}
+| Método | Endpoint              | Descripción | Autenticación |
+|--------|-----------------------|-------------|---------------|
+| GET    | `/debug/users`        | Lista usuarios | Sí |
+| POST   | `/debug/admin/reset`  | Resetea password admin | Sí |
 
-// carrito.service.ts
-agregarProducto(producto: string, cantidad: number) {
-  return this.http.post(`/ejemplos/carrito/agregar?producto=${producto}&cantidad=${cantidad}`, {}, { withCredentials: true });
-}
-verCarrito() {
-  return this.http.get('/ejemplos/carrito/ver', { withCredentials: true });
-}
-vaciarCarrito() {
-  return this.http.delete('/ejemplos/carrito/vaciar', { withCredentials: true });
-}
-```
+#### Explicaciones Detalladas:
 
-> **Nota:** Es importante usar `{ withCredentials: true }` en Angular para que se envíen las cookies de sesión.
+- **GET `/debug/users`**:
+  - **Descripción**: Lista todos los usuarios de la BD.
+  - **Lógica**: Consulta `UserRepository.findAll()` y retorna lista con id, username, password, role.
+  - **Respuesta**: JSON array de usuarios.
+  - **Ejemplo**:
+    ```bash
+    curl -b cookies.txt http://localhost:8080/debug/users
+    ```
 
----
+- **POST `/debug/admin/reset`**:
+  - **Descripción**: Cambia la contraseña del usuario admin.
+  - **Lógica**: Busca usuario "admin", encripta nueva password y guarda.
+  - **Parámetros**: `password` como query param.
+  - **Respuesta**: Mensaje y password encriptada.
+  - **Ejemplo**:
+    ```bash
+    curl -b cookies.txt -X POST "http://localhost:8080/debug/admin/reset?password=nueva123"
+    ```
 
-##  Gestión de Sesiones
-
-### 1. Probar autenticación básica
-
-```bash
-# Endpoint público (sin autenticación)
-curl http://localhost:8080/test/public
-
-# Endpoint protegido (con autenticación)
-curl -u user:password http://localhost:8080/test/authenticated
-
-# Ver información del usuario
-curl -u user:password http://localhost:8080/test/me
-```
-
-### 2. Trabajar con la sesión
-
-```bash
-# Guardar cookie de sesión en archivo
-curl -c cookies.txt -u user:password http://localhost:8080/test/authenticated
-
-# Reutilizar la sesión (ya no necesitas credenciales)
-curl -b cookies.txt http://localhost:8080/session/info
-
-# Ver atributos de la sesión
-curl -b cookies.txt http://localhost:8080/session/attributes
-
-# Guardar un atributo personalizado
-curl -b cookies.txt -X POST "http://localhost:8080/session/attribute?key=miDato&value=hola"
-
-# Recuperar el atributo
-curl -b cookies.txt http://localhost:8080/session/attribute/miDato
-```
-
-### 3. Cerrar sesión (Logout)
-
-```bash
-# Hacer logout
-curl -b cookies.txt -X POST http://localhost:8080/session/logout
-
-# Intentar usar la sesión después del logout (fallará con 401)
-curl -b cookies.txt http://localhost:8080/session/info
-```
-
-### ¿Qué pasa cuando cierras sesión?
-
-1. `session.invalidate()` - Destruye la sesión en el servidor
-2. `SecurityContextHolder.clearContext()` - Limpia el contexto de seguridad
-3. La cookie JSESSIONID ya no es válida
-4. Siguientes peticiones recibirán error 401
-
----
-
-## 🛒 Ejemplos Prácticos
-
-### Carrito de Compras (sin autenticación)
-
-```bash
-# Crear sesión y agregar producto
-curl -c cookies.txt -X POST "http://localhost:8080/ejemplos/carrito/agregar?producto=Laptop&cantidad=1"
-
-# Agregar más productos (misma sesión)
-curl -b cookies.txt -X POST "http://localhost:8080/ejemplos/carrito/agregar?producto=Mouse&cantidad=2"
-
-# Ver el carrito
-curl -b cookies.txt http://localhost:8080/ejemplos/carrito/ver
-
-# Vaciar carrito
-curl -b cookies.txt -X DELETE http://localhost:8080/ejemplos/carrito/vaciar
-```
-
-### Preferencias de Usuario
-
-```bash
-# Cambiar idioma
-curl -c cookies.txt -X POST "http://localhost:8080/ejemplos/preferencias/idioma?idioma=en"
-
-# Cambiar tema
-curl -b cookies.txt -X POST "http://localhost:8080/ejemplos/preferencias/tema?tema=oscuro"
-
-# Ver preferencias
-curl -b cookies.txt http://localhost:8080/ejemplos/preferencias
-```
-
-### Formulario Multi-Paso (Wizard)
-
-```bash
-# Paso 1: Datos personales
-curl -c cookies.txt -X POST "http://localhost:8080/ejemplos/registro/paso1?nombre=Juan&email=juan@mail.com"
-
-# Paso 2: Datos de contacto
-curl -b cookies.txt -X POST "http://localhost:8080/ejemplos/registro/paso2?telefono=123456789&ciudad=Madrid"
-
-# Ver estado
-curl -b cookies.txt http://localhost:8080/ejemplos/registro/estado
-
-# Paso 3: Confirmar
-curl -b cookies.txt -X POST http://localhost:8080/ejemplos/registro/paso3
-```
 
 ---
 
-## 🔒 Configuración de Seguridad
+## Configuración de Seguridad
 
-### SecurityConfig.java explicado
-```java
-@Configuration
-@EnableMethodSecurity
-public class SecurityConfig {
+La seguridad se configura en `SecurityConfig.java`:
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-            // CSRF deshabilitado (para APIs REST)
-            .csrf(csrf -> csrf.disable())
-            
-            // Reglas de autorización
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/test/public", "/h2-console/**").permitAll()
-                .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers("/test/authenticated", "/test/me").authenticated()
-                .requestMatchers("/session/**").authenticated()
-                .requestMatchers("/ejemplos/**").permitAll()
-                .anyRequest().authenticated()
-            )
-            
-            // Permitir H2 Console (frames)
-            .headers(headers -> headers.frameOptions(frame -> frame.disable()))
-            
-            // Habilitar HTTP Basic
-            .httpBasic(httpBasic -> {})
-            
-            // Habilitar login con formularios HTML
-            .formLogin(formLogin -> {})
-            
-            // Configurar logout
-            .logout(logout -> logout
-                .logoutUrl("/session/logout")
-                .logoutSuccessHandler((request, response, authentication) -> {
-                    response.setStatus(HttpServletResponse.SC_OK);
-                    response.getWriter().flush();
-                })
-                .invalidateHttpSession(true)
-                .clearAuthentication(true)
-            );
-        return http.build();
-    }
-}
-```
+- **CSRF Deshabilitado**: Para APIs REST.
+- **Reglas de Autorización**:
+  - `/test/public`, `/h2-console/**`: Permitidos sin login.
+  - `/api/auth/**`: Permitidos para login/logout.
+  - `/ejemplos/**`: Requieren autenticación (para carrito).
+  - Resto: Autenticación obligatoria.
+- **Autenticación**: Soporta HTTP Basic y formularios.
+- **Logout**: Invalida sesión y limpia contexto.
 
-### Opciones de seguridad adicionales
+Para cambiar reglas, edita `authorizeHttpRequests` en `SecurityConfig.java`.
 
-#### Habilitar CSRF (para aplicaciones con formularios HTML)
+### Explicación Detallada de SecurityConfig.java
 
-```java
-// Por defecto está habilitado, nosotros lo deshabilitamos para API REST
-// Si usas formularios HTML tradicionales, déjalo habilitado:
-.csrf(csrf -> csrf
-    .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-)
-```
-
-#### Habilitar CORS (para permitir peticiones desde Angular/React)
-
-```java
-.cors(cors -> cors.configurationSource(request -> {
-    CorsConfiguration config = new CorsConfiguration();
-    config.setAllowedOrigins(List.of("http://localhost:4200")); // Angular
-    config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
-    config.setAllowedHeaders(List.of("*"));
-    config.setAllowCredentials(true); // Importante para cookies
-    return config;
-}))
-```
-
-#### Headers de seguridad (XSS, etc.)
-
-```java
-.headers(headers -> headers
-    .xssProtection(xss -> xss.enable())
-    .contentSecurityPolicy(csp -> csp.policyDirectives("default-src 'self'"))
-    .frameOptions(frame -> frame.deny())
-)
-```
-
-#### Control de sesiones concurrentes
-
-```java
-.sessionManagement(session -> session
-    .maximumSessions(1)                    // Solo 1 sesión por usuario
-    .maxSessionsPreventsLogin(true)        // Bloquea nuevo login si ya hay sesión
-    .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
-)
-```
-
----
-
-## 📊 Consola H2 (Ver Base de Datos)
-
-Accede a: `http://localhost:8080/h2-console`
-
-- **JDBC URL**: `jdbc:h2:mem:testdb`
-- **User**: `sa`
-- **Password**: (vacío)
-
-Podrás ver la tabla `users` con los usuarios de prueba.
-
----
-
-## 🔑 Explicación de Conceptos Clave
-
-### ¿Qué es una sesión en Spring Boot?
-
-Una **sesión HTTP** es un mecanismo que permite al servidor recordar información sobre un usuario entre distintas peticiones HTTP. En aplicaciones web, esto es fundamental para mantener el estado del usuario, como su autenticación, carrito de compras o preferencias.
-
-#### ¿Cómo funciona en Spring Boot?
-- **HttpSession**: Es un objeto Java que se crea automáticamente por Spring y se asocia a cada usuario. Se almacena en el servidor (por defecto en memoria, pero puede ser en Redis o base de datos en producción).
-- **Cookie JSESSIONID**: Cuando un usuario inicia sesión, Spring crea una sesión y envía una cookie llamada `JSESSIONID` al navegador. Esta cookie identifica la sesión en futuras peticiones.
-- **Almacenamiento**: Puedes guardar cualquier objeto serializable en la sesión usando `session.setAttribute("clave", objeto)`. Por ejemplo, el carrito de compras se guarda como un atributo de la sesión.
-
-#### Analogía simple
-Imagina que vas a un supermercado:
-- La **sesión** es tu carrito de compras: el supermercado (servidor) te da un carrito único cuando entras.
-- La **cookie JSESSIONID** es el ticket que te dan: cada vez que vas a una sección, muestras el ticket para que sepan que eres tú.
-- Si sales sin pagar (sesión expira), pierdes el carrito.
-
-#### Ejemplo de código en Spring Boot
-```java
-@Controller
-public class SessionController {
-
-    @GetMapping("/session/info")
-    public Map<String, Object> getSessionInfo(HttpSession session) {
-        Map<String, Object> info = new HashMap<>();
-        info.put("id", session.getId());  // ID único de la sesión
-        info.put("creationTime", new Date(session.getCreationTime()));
-        info.put("lastAccessedTime", new Date(session.getLastAccessedTime()));
-        return info;
-    }
-
-    @PostMapping("/session/attribute")
-    public String setAttribute(@RequestParam String key, @RequestParam String value, HttpSession session) {
-        session.setAttribute(key, value);  // Guardar dato en sesión
-        return "Atributo guardado";
-    }
-
-    @GetMapping("/session/attribute/{key}")
-    public Object getAttribute(@PathVariable String key, HttpSession session) {
-        return session.getAttribute(key);  // Recuperar dato de sesión
-    }
-}
-```
-
-#### Consideraciones importantes
-- **Timeout**: Por defecto, las sesiones expiran después de 30 minutos de inactividad. Puedes configurarlo en `application.properties`.
-- **Seguridad**: Las sesiones son seguras porque el servidor valida la cookie. Si alguien roba la cookie, puede acceder a la sesión (por eso usa HTTPS en producción).
-- **Escalabilidad**: En producción con muchos usuarios, usa Redis para almacenar sesiones en lugar de memoria.
-
----
-
-## 📁 Explicación Detallada de los Archivos de Código
-
-A continuación, explico cada archivo de código proporcionado, su propósito, métodos clave y cómo encaja en el proyecto de Spring Security con sesiones.
-
-### 1. DbUserDetailsService.java (Servicio de carga de usuarios)
-**Ubicación:** `src/main/java/app/ejemplo02/user/DbUserDetailsService.java`
-
-**Propósito:** Implementa la interfaz `UserDetailsService` de Spring Security para cargar detalles de usuarios desde la base de datos durante la autenticación.
-
-**Métodos clave:**
-- `loadUserByUsername(String username)`: Busca al usuario en la BD usando `UserRepository`. Si no existe, lanza `UsernameNotFoundException`. Crea y devuelve un objeto `User` de Spring Security con username, password encriptada y roles.
-
-**Cómo encaja:** Es usado automáticamente por Spring Security en el proceso de login. Sin este servicio, no se podrían autenticar usuarios desde la BD.
-
-**Ejemplo de uso:** Cuando un usuario intenta loguearse, Spring llama a este método para obtener sus datos.
-
----
-
-### 2. SecurityConfig.java (Configuración de seguridad)
 **Ubicación:** `src/main/java/app/ejemplo02/config/SecurityConfig.java`
 
-**Propósito:** Configura toda la seguridad de la aplicación usando Spring Security, definiendo reglas de autorización, autenticación y manejo de sesiones.
+**Propósito:** Esta clase configura toda la seguridad de la aplicación Spring Boot usando Spring Security. Define reglas de autorización, autenticación, manejo de sesiones y logout. Es el núcleo de la configuración de seguridad.
 
-**Métodos clave:**
-- `securityFilterChain(HttpSecurity http)`: Configura el filtro de seguridad.
-  - `.csrf(csrf -> csrf.disable())`: Deshabilita CSRF para APIs REST (común en aplicaciones sin formularios HTML tradicionales).
-  - `.authorizeHttpRequests(auth -> auth ...)`: Define reglas de autorización:
-    - `.requestMatchers("/test/public", "/h2-console/**").permitAll()`: Permite acceso público a endpoints de prueba y consola H2.
-    - `.requestMatchers("/api/auth/**").permitAll()`: Permite acceso público a endpoints de autenticación (login/logout).
-    - `.requestMatchers("/test/authenticated", "/test/me").authenticated()`: Requiere autenticación para endpoints de prueba protegidos.
-    - `.requestMatchers("/session/**").authenticated()`: Requiere autenticación para endpoints de gestión de sesiones.
-    - `.requestMatchers("/ejemplos/**").permitAll()`: Permite acceso público a ejemplos (para probar carrito sin login).
-    - `.anyRequest().authenticated()`: Cualquier otro endpoint requiere autenticación.
-  - `.headers(headers -> headers.frameOptions(frame -> frame.disable()))`: Deshabilita frame options para permitir que la consola H2 se muestre en iframes.
-  - `.httpBasic(httpBasic -> {})`: Habilita autenticación HTTP Basic (usuario:password en headers).
-  - `.formLogin(formLogin -> {})`: Habilita login con formularios HTML (por defecto en /login).
-  - `.logout(logout -> logout ...)`: Configura el logout:
-    - `.logoutUrl("/session/logout")`: Endpoint para cerrar sesión.
-    - `.logoutSuccessHandler((request, response, authentication) -> { ... })`: Handler personalizado que responde con mensaje de éxito.
-    - `.invalidateHttpSession(true)`: Invalida la sesión HTTP al hacer logout.
-    - `.clearAuthentication(true)`: Limpia el contexto de autenticación.
-- `authenticationManager(AuthenticationConfiguration config)`: Proporciona el gestor de autenticación (usado por AuthController).
-- `passwordEncoder()`: Crea un encoder de passwords delegante (soporta múltiples algoritmos como BCrypt).
+**Métodos y Lógica Principales:**
 
-**Cómo encaja:** Es el núcleo de la configuración de seguridad. Define qué endpoints proteger y cómo manejar la autenticación.
+1. **`securityFilterChain(HttpSecurity http)`**:
+   - **Propósito**: Configura el filtro de seguridad principal que procesa cada petición HTTP.
+   - **Lógica Detallada**:
+     - `.csrf(csrf -> csrf.disable())`: Deshabilita la protección CSRF (Cross-Site Request Forgery). Esto es común en APIs REST donde no se usan formularios HTML tradicionales, ya que CSRF requiere tokens en formularios.
+     - `.authorizeHttpRequests(auth -> auth ...)`: Define las reglas de autorización basadas en rutas:
+       - `.requestMatchers("/test/public", "/h2-console/**").permitAll()`: Permite acceso público a endpoints de prueba y la consola H2 (base de datos).
+       - `.requestMatchers("/api/auth/**").permitAll()`: Permite acceso público a endpoints de autenticación (login, logout, etc.) para que los usuarios puedan autenticarse.
+       - `.requestMatchers("/test/authenticated", "/test/me").authenticated()`: Requiere autenticación para endpoints de prueba protegidos.
+       - `.requestMatchers("/session/**").authenticated()`: Requiere autenticación para todos los endpoints de gestión de sesiones.
+       - `.requestMatchers("/ejemplos/**").permitAll()`: Permite acceso público a ejemplos (como el carrito), para probar sin login.
+       - `.anyRequest().authenticated()`: Cualquier otra petición requiere autenticación obligatoria.
+     - `.headers(headers -> headers.frameOptions(frame -> frame.disable()))`: Deshabilita las restricciones de frames para permitir que la consola H2 se muestre en iframes (necesario para la interfaz web de H2).
+     - `.httpBasic(httpBasic -> {})`: Habilita autenticación HTTP Basic (envío de usuario:password en headers). Útil para APIs.
+     - `.formLogin(formLogin -> {})`: Habilita login con formularios HTML (por defecto en `/login`). Aunque la app usa APIs REST, esto permite compatibilidad.
+     - `.logout(logout -> logout ...)`: Configura el logout:
+       - `.logoutUrl("/session/logout")`: Define la URL para cerrar sesión (POST a esta ruta).
+       - `.logoutSuccessHandler((request, response, authentication) -> { ... })`: Handler personalizado que responde con status 200 y mensaje "Sesión cerrada exitosamente" en lugar de redirigir.
+       - `.invalidateHttpSession(true)`: Invalida la sesión HTTP al hacer logout.
+       - `.clearAuthentication(true)`: Limpia el contexto de autenticación de Spring Security.
+   - **Resultado**: Devuelve un `SecurityFilterChain` que Spring aplica a todas las peticiones.
 
-**Ejemplo de uso:** Sin esta configuración, Spring Security no sabría qué proteger o cómo autenticar.
+2. **`authenticationManager(AuthenticationConfiguration config)`**:
+   - **Propósito**: Proporciona el gestor de autenticación usado por los controladores (como `AuthController`).
+   - **Lógica**: Obtiene el `AuthenticationManager` configurado automáticamente por Spring Security.
 
----
+3. **`passwordEncoder()`**:
+   - **Propósito**: Define cómo se encriptan las contraseñas.
+   - **Lógica**: Usa `PasswordEncoderFactories.createDelegatingPasswordEncoder()`, que soporta múltiples algoritmos (BCrypt por defecto, pero puede manejar otros como SHA-256). Esto permite migrar algoritmos sin romper contraseñas existentes.
 
-### 3. AuthController.java (Controlador de autenticación REST)
-**Ubicación:** `src/main/java/app/ejemplo02/controller/AuthController.java`
+**Cómo Encaja en el Proyecto:**
+- **Integración con Controladores**: Los controladores como `AuthController` usan el `AuthenticationManager` inyectado. Las reglas de autorización afectan directamente qué endpoints requieren login.
+- **Sesiones**: La configuración de logout invalida sesiones, lo que afecta a `SessionController`.
+- **Flujo General**: Al iniciar la app, Spring aplica esta configuración. Cada petición pasa por los filtros de seguridad antes de llegar a los controladores.
 
-**Propósito:** Maneja endpoints de login/logout para APIs REST, permitiendo autenticación sin formularios HTML tradicionales.
+**Ejemplo de Uso:**
+- Sin esta configuración, Spring Security bloquearía todas las peticiones por defecto.
+- Para cambiar permisos, edita las reglas en `authorizeHttpRequests` (ej. cambiar `/ejemplos/**` a `authenticated()` si quieres requerir login para el carrito).
 
-**Métodos clave:**
-- `login(LoginRequest loginRequest, HttpServletRequest request)`: Recibe JSON con username/password, autentica usando `AuthenticationManager`, guarda el `SecurityContext` en la sesión y devuelve info del usuario.
-- `logout(HttpServletRequest request)`: Invalida la sesión y limpia el contexto de seguridad.
-
-**Cómo encaja:** Complementa la autenticación básica de Spring Security con endpoints RESTful. Útil para frontends como Angular.
-
-**Ejemplo de uso:** POST a `/api/auth/login` con `{"username":"user","password":"password"}` para iniciar sesión.
-
----
-
-### 4. DebugController.java (Controlador de depuración)
-**Ubicación:** `src/main/java/app/ejemplo02/controller/DebugController.java`
-
-**Propósito:** Proporciona endpoints para depurar y gestionar usuarios en desarrollo/testing.
-
-**Métodos clave:**
-- `listUsers()`: Lista todos los usuarios con ID, username, password encriptada y role.
-- `resetAdminPassword(String password)`: Cambia la contraseña del usuario "admin" y la guarda encriptada.
-
-**Cómo encaja:** No es parte del flujo normal, pero ayuda a verificar usuarios y resetear credenciales en desarrollo.
-
-**Ejemplo de uso:** GET `/debug/users` para ver todos los usuarios en la BD.
+Esta configuración asegura que la app sea segura mientras permite acceso público a endpoints necesarios.
 
 ---
 
-### 5. EjemplosSessionController.java (Ejemplos prácticos de sesiones)
-**Ubicación:** `src/main/java/app/ejemplo02/controller/EjemplosSessionController.java`
+## Base de Datos y Usuarios
 
-**Propósito:** Demuestra usos reales de `HttpSession` con ejemplos como carrito, preferencias, historial, wizard, etc.
+- **BD**: H2 en memoria (`jdbc:h2:mem:testdb`).
+- **Usuarios Iniciales** (desde `data.sql`):
+  - `user` / `password` (ROLE_USER)
+  - `admin` / `admin123` (ROLE_ADMIN)
 
-**Secciones clave:**
-- **Carrito de compras:** Agrega/ver/vacía productos en sesión.
-- **Preferencias:** Guarda idioma/tema.
-- **Historial:** Lista páginas visitadas.
-- **Wizard:** Formulario multi-paso guardando datos en sesión.
-- **Flash messages, contador de visitas, datos temporales con TTL.**
-
-**Cómo encaja:** Ilustra conceptos teóricos de sesiones con código funcional. Endpoints `/ejemplos/*` son públicos para probar sin login.
-
-**Ejemplo de uso:** POST `/ejemplos/carrito/agregar?producto=Laptop&cantidad=1` para añadir al carrito.
+Accede a H2 Console en `http://localhost:8080/h2-console` para ver datos.
 
 ---
 
-### 6. SessionController.java (Gestión avanzada de sesiones)
-**Ubicación:** `src/main/java/app/ejemplo02/controller/SessionController.java`
+## Ejemplos de Uso
 
-**Propósito:** Permite inspeccionar y manipular sesiones: ver info, atributos, configurar timeout, etc.
+### 1. Login y Acceso a Endpoint Protegido
 
-**Métodos clave:**
-- `obtenerInfoSesion()`: Devuelve ID de sesión, usuario, roles, tiempos.
-- `obtenerAtributosSesion()`: Lista atributos en la sesión.
-- `guardarAtributo() / obtenerAtributo()`: Guarda/recupera datos personalizados.
-- `cerrarSesion()`: Logout manual.
-- `obtenerTimeout() / configurarTimeout()`: Gestiona tiempo de expiración.
+```bash
+# Login
+curl -c cookies.txt -X POST -H "Content-Type: application/json" -d '{"username":"user","password":"password"}' http://localhost:8080/api/auth/login
 
-**Cómo encaja:** Complementa ejemplos básicos, mostrando cómo Spring maneja sesiones internamente.
+# Acceder a endpoint privado
+curl -b cookies.txt http://localhost:8080/test/private
+```
 
-**Ejemplo de uso:** GET `/session/info` para ver detalles de la sesión actual.
+### 2. Usar el Carrito
 
----
+```bash
+# Agregar producto
+curl -b cookies.txt -X POST "http://localhost:8080/ejemplos/carrito/agregar?producto=Laptop&cantidad=1"
 
-### 7. TestController.java (Controlador de pruebas básicas)
-**Ubicación:** `src/main/java/app/ejemplo02/controller/TestController.java`
+# Ver carrito
+curl -b cookies.txt http://localhost:8080/ejemplos/carrito/ver
+```
 
-**Propósito:** Endpoints simples para probar autenticación.
+### 3. Gestionar Sesión
 
-**Métodos clave:**
-- `endpointPublico()`: Accesible sin login.
-- `endpointAutenticado()`: Requiere autenticación, saluda al usuario.
-- `obtenerMiInfo()`: Devuelve username y roles del usuario logueado.
+```bash
+# Ver info de sesión
+curl -b cookies.txt http://localhost:8080/session/info
 
-**Cómo encaja:** Base para probar configuración de seguridad. Endpoints `/test/*` usados en ejemplos de curl/Postman.
-
-**Ejemplo de uso:** GET `/test/me` para ver info del usuario autenticado.
-
----
-
-### 8. UserEntity.java (Entidad JPA para usuarios)
-**Ubicación:** `src/main/java/app/ejemplo02/models/UserEntity.java`
-
-**Propósito:** Modelo de datos para la tabla `users` en la BD.
-
-**Campos:** ID (auto-generado), username (único), password (encriptada), role (ej. "ROLE_USER").
-
-**Cómo encaja:** Usado por `UserRepository` para persistir usuarios. Spring Data JPA crea la tabla automáticamente.
-
-**Ejemplo de uso:** `UserEntity user = new UserEntity(); user.setUsername("user");` para crear un usuario.
+# Guardar atributo
+curl -b cookies.txt -X POST "http://localhost:8080/session/attribute?key=miDato&value=hola"
+```
 
 ---
 
-### 9. UserService.java (Servicio de negocio para usuarios)
+## Conceptos Clave
+
+### Sesiones HTTP
+- **Qué es**: Almacenamiento de datos por usuario entre peticiones.
+- **Cómo funciona**: Spring crea una sesión por usuario, identificada por cookie `JSESSIONID`.
+- **Uso**: Carrito, preferencias, etc.
+
+### Autenticación vs Autorización
+- **Autenticación**: Verificar identidad (login).
+- **Autorización**: Controlar acceso (roles, permisos).
+
+### Spring Security
+- **Filtros**: Procesan cada petición.
+- **Context**: Almacena usuario autenticado.
+- **Roles**: Definidos en BD, usados en `@PreAuthorize`.
+
+---
+
+## Solución de Problemas
+
+- **Error al iniciar**: Verifica JDK 21 y dependencias (`./gradlew build`).
+- **Login falla**: Revisa usuarios en H2 Console.
+- **Sesión expira**: Configura `server.servlet.session.timeout` en `application.properties`.
+- **CORS**: Si usas frontend, agrega configuración en `SecurityConfig.java`.
+
+Para más ayuda, revisa logs en consola o archivos de configuración.
+
+---
+
+## Gestión de Cookies y Sesiones
+
+### ¿Dónde se guardan las cookies al autenticar?
+
+Cuando realizas login exitoso, el servidor Spring Security crea una sesión HTTP y envía una cookie llamada `JSESSIONID` en la respuesta. Esta cookie identifica tu sesión en futuras peticiones.
+
+#### En curl (línea de comandos):
+- **Guardar cookies**: Usa `-c archivo.txt` en el login para guardar las cookies en un archivo.
+- **Enviar cookies**: Usa `-b archivo.txt` en peticiones posteriores para enviar la cookie guardada.
+
+Ejemplo completo:
+```bash
+# Login y guardar cookies
+curl -c cookies.txt -X POST -H "Content-Type: application/json" -d '{"username":"user","password":"password"}' http://localhost:8080/api/auth/login
+
+# Usar cookies en otras peticiones
+curl -b cookies.txt http://localhost:8080/api/auth/me
+```
+
+#### En Postman:
+- Postman guarda automáticamente las cookies después del login.
+- Ve a la pestaña "Cookies" (abajo a la derecha) para ver/verificar las cookies guardadas.
+- Las cookies se envían automáticamente en peticiones posteriores al mismo dominio.
+
+#### En el navegador:
+- Las cookies se guardan automáticamente en el almacenamiento del navegador.
+- Inspecciona en DevTools → Application → Cookies para ver `JSESSIONID`.
+
+#### En el código de la aplicación:
+- Las cookies se manejan automáticamente por Spring Security.
+- No necesitas código adicional; el framework se encarga de validar la cookie `JSESSIONID` en cada petición.
+- Si la sesión expira o es inválida, recibirás un error 401.
+
+**Nota**: Las cookies son específicas por dominio y se envían automáticamente por el cliente HTTP (curl, Postman, navegador). No necesitas manejarlas manualmente en el código del servidor.
+
+---
+
+## Explicación Detallada de UserService.java
+
 **Ubicación:** `src/main/java/app/ejemplo02/service/UserService.java`
 
-**Propósito:** Lógica de negocio para gestionar usuarios: crear, buscar, listar.
+**Propósito:** Servicio de negocio que maneja la lógica relacionada con usuarios. Abstrae operaciones de BD y encriptación de contraseñas, usado por controladores y otros servicios.
 
-**Métodos clave:**
-- `crearUsuario()`: Crea usuario con password encriptada.
-- `buscarPorUsername()`: Busca por username.
-- `listarTodos()`: Lista todos los usuarios.
+**Métodos y Lógica Principales:**
 
-**Cómo encaja:** Abstrae lógica de BD, usado por controladores o servicios de autenticación.
+1. **`crearUsuario(String username, String passwordPlano, String role)`**:
+   - **Propósito**: Crea un nuevo usuario en la BD con contraseña encriptada.
+   - **Lógica Detallada**:
+     - Crea una instancia de `UserEntity`.
+     - Encripta la contraseña plana usando `passwordEncoder.encode(passwordPlano)` (BCrypt por defecto).
+     - Asigna username, password encriptada y role.
+     - Guarda en BD con `userRepository.save(user)`.
+     - Retorna el usuario creado.
+   - **Resultado**: Usuario persistido en BD con contraseña segura.
 
-**Ejemplo de uso:** `userService.crearUsuario("user", "password", "ROLE_USER");` para crear un usuario.
+2. **`buscarPorUsername(String username)`**:
+   - **Propósito**: Busca un usuario por su nombre de usuario.
+   - **Lógica Detallada**:
+     - Usa `userRepository.findByUsername(username)` (método derivado de Spring Data JPA).
+     - Retorna el usuario si existe, o `null` si no.
+   - **Resultado**: Usuario encontrado o null.
+
+3. **`listarTodos()`**:
+   - **Propósito**: Lista todos los usuarios de la BD.
+   - **Lógica Detallada**:
+     - Llama a `userRepository.findAll()` para obtener todos los usuarios.
+     - Retorna la lista completa.
+   - **Resultado**: Lista de todos los usuarios.
+
+**Cómo Encaja en el Proyecto:**
+- **Integración con Controladores**: `DebugController` usa `listarTodos()` para mostrar usuarios. `AuthController` podría usarlo indirectamente via `DbUserDetailsService`.
+- **Encriptación**: Asegura que contraseñas se guarden encriptadas, compatible con Spring Security.
+- **Abstracción**: Separa lógica de negocio de la capa de datos (repositorio).
+
+**Ejemplo de Uso:**
+- Crear usuario: `userService.crearUsuario("nuevo", "pass123", "ROLE_USER");`
+- Buscar: `UserEntity user = userService.buscarPorUsername("user");`
+- Listar: `List<UserEntity> users = userService.listarTodos();`
+
+Este servicio es esencial para gestionar usuarios de forma segura y centralizada.
 
 ---
 
-### 10. DbUserDetailsService.java (Duplicado)
-Es idéntico al archivo 1. Explicación igual: carga usuarios desde BD para autenticación.
+## Explicación Detallada de SecurityUtils.java
+
+**Ubicación:** `src/main/java/app/ejemplo02/util/SecurityUtils.java`
+
+**Propósito:** Utilidad estática que centraliza operaciones comunes de seguridad relacionadas con sesiones y contexto de autenticación. Proporciona métodos helper para manejar el estado de autenticación de forma segura y consistente.
+
+**Métodos y Lógica Principales:**
+
+1. **`setAuthenticationInSession(HttpServletRequest request, Authentication authentication)`**:
+   - **Propósito**: Establece la autenticación en el contexto de seguridad y la guarda en la sesión HTTP.
+   - **Lógica Detallada**:
+     - Crea un nuevo `SecurityContext` vacío usando `SecurityContextHolder.createEmptyContext()`.
+     - Asigna la autenticación al contexto con `securityContext.setAuthentication(authentication)`.
+     - Establece el contexto en el `SecurityContextHolder` actual con `SecurityContextHolder.setContext(securityContext)` (esto afecta al hilo actual).
+     - Obtiene o crea una sesión HTTP con `request.getSession(true)`.
+     - Guarda el `SecurityContext` en la sesión usando la clave estándar `HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY` (que es "SPRING_SECURITY_CONTEXT").
+   - **Resultado**: La autenticación queda disponible en el contexto de seguridad y persistida en la sesión para futuras peticiones.
+
+2. **`clearAuthentication(HttpServletRequest request)`**:
+   - **Propósito**: Limpia completamente la autenticación, invalidando la sesión y limpiando el contexto.
+   - **Lógica Detallada**:
+     - Obtiene la sesión actual sin crear una nueva (`request.getSession(false)`).
+     - Si existe una sesión, la invalida completamente con `session.invalidate()` (elimina todos los atributos y la marca como expirada).
+     - Limpia el contexto de seguridad del hilo actual con `SecurityContextHolder.clearContext()`.
+   - **Resultado**: El usuario queda completamente desautenticado, y la sesión se destruye.
+
+**Cómo Encaja en el Proyecto:**
+- **Integración con AuthController**: En el método `login()`, después de autenticar exitosamente, se llama `SecurityUtils.setAuthenticationInSession(request, authentication)` para guardar el estado. En `logout()`, se usa `SecurityUtils.clearAuthentication(request)` para cerrar sesión.
+- **Centralización**: Evita duplicar código de manejo de sesiones en múltiples lugares. Proporciona una forma consistente de manejar autenticación.
+- **Seguridad**: Asegura que el `SecurityContext` se guarde correctamente en la sesión, lo que permite que Spring Security recupere la autenticación en peticiones posteriores.
+
+**Ejemplo de Uso:**
+- Después de login exitoso: `SecurityUtils.setAuthenticationInSession(request, authentication);`
+- Al hacer logout: `SecurityUtils.clearAuthentication(request);`
+
+Esta utilidad es crucial para el manejo correcto de sesiones en aplicaciones web con Spring Security, asegurando que la autenticación persista entre peticiones y se limpie adecuadamente al cerrar sesión.
 
 ---
 
-Estos archivos forman una aplicación completa de Spring Security con sesiones: configuración, autenticación, ejemplos prácticos y gestión de usuarios. Si necesitas más detalles sobre algún método o archivo específico, dime.
+## Reto Práctico: Miniproyecto  de Sesiones y Cookies
+
+### Descripción del Reto
+
+Para consolidar el aprendizaje sobre sesiones HTTP y cookies en Spring Security, crea un **nuevo proyecto Spring Boot independiente** llamado "TodoApp" que implemente un **sistema de "Lista de Tareas Pendientes" (To-Do List)** almacenado en la sesión del usuario. Este miniproyecto es completamente separado del proyecto actual y te permitirá practicar:
+
+- **Almacenamiento de datos en sesiones**: Guardar listas personalizadas por usuario.
+- **Manejo de cookies**: Verificar cómo se mantienen las sesiones entre peticiones.
+- **Autenticación y autorización**: Asegurar que cada usuario vea solo su lista.
+- **Operaciones CRUD básicas**: Crear, leer, actualizar y eliminar tareas.
+
+**Nota**: Este es un proyecto completamente independiente. Crea un nuevo directorio y proyecto Spring Boot desde cero. **No copies código del proyecto original; implementa todo tú mismo.**
+
+### Objetivos de Aprendizaje
+
+- Comprender cómo Spring Security maneja las sesiones HTTP.
+- Aprender a usar `HttpSession` para almacenar datos personalizados.
+- Practicar el envío y recepción de cookies en clientes HTTP (Postman, curl).
+- Implementar lógica de negocio en controladores REST.
+
+### Requisitos Funcionales
+
+1. **Crear una nueva tarea**: Endpoint `POST /todo/agregar` para añadir una tarea (título, descripción).
+2. **Listar tareas**: Endpoint `GET /todo/listar` para ver todas las tareas del usuario.
+3. **Marcar como completada**: Endpoint `POST /todo/completar/{id}` para cambiar el estado de una tarea.
+4. **Eliminar tarea**: Endpoint `DELETE /todo/eliminar/{id}` para borrar una tarea específica.
+5. **Limpiar lista**: Endpoint `DELETE /todo/limpiar` para vaciar toda la lista de tareas.
+6. **Login/Logout**: Endpoints para autenticación (`/api/auth/login`, `/api/auth/logout`).
+7. **Endpoint público**: `GET /api/auth/public` accesible sin login.
+
+### Instrucciones de Implementación
+
+#### Paso 1: Crear un Nuevo Proyecto Spring Boot
+
+1. Crea un nuevo directorio: `C:\Users\madrid\ws\Labs_DWES_2526\T2\TodoApp`
+2. Inicializa con Gradle: `gradle init --type basic --dsl groovy`
+3. Configura `build.gradle` con dependencias de Spring Boot (web, security, data-jpa, h2).
+
+#### Paso 2: Configurar la Aplicación
+
+- Crea `TodoAppApplication.java` como clase principal:
+  ```java
+  @SpringBootApplication
+  public class TodoAppApplication {
+      public static void main(String[] args) {
+          SpringApplication.run(TodoAppApplication.class, args);
+      }
+  }
+  ```
+
+- Configura `application.properties`:
+  ```properties
+  spring.application.name=TodoApp
+  spring.datasource.url=jdbc:h2:mem:testdb
+  spring.datasource.driverClassName=org.h2.Driver
+  spring.datasource.username=sa
+  spring.datasource.password=
+  spring.jpa.database-platform=org.hibernate.dialect.H2Dialect
+  spring.jpa.hibernate.ddl-auto=create-drop
+  server.servlet.session.timeout=30m
+  spring.h2.console.enabled=true
+  spring.h2.console.path=/h2-console
+  spring.sql.init.mode=always
+  ```
+
+- Crea `data.sql`:
+  ```sql
+  INSERT INTO users (username, password, role) VALUES ('user', '{bcrypt}$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'ROLE_USER');
+  INSERT INTO users (username, password, role) VALUES ('admin', '{bcrypt}$2a$12$eTIoaBs2LeiMndO3SQFykuVBMkESD3m43NYBldeHTe1WLxNcXa/SC', 'ROLE_ADMIN');
+  ```
+
+#### Paso 3: Implementar Seguridad
+
+- Crea `SecurityConfig.java`:
+  ```java
+  @Configuration
+  @EnableMethodSecurity
+  public class SecurityConfig {
+      @Bean
+      public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+          http.csrf(csrf -> csrf.disable())
+              .authorizeHttpRequests(auth -> auth
+                  .requestMatchers("/api/auth/**", "/h2-console/**").permitAll()
+                  .anyRequest().authenticated()
+              )
+              .headers(headers -> headers.frameOptions(frame -> frame.disable()))
+              .httpBasic(httpBasic -> {})
+              .formLogin(formLogin -> {})
+              .logout(logout -> logout
+                  .logoutUrl("/api/auth/logout")
+                  .logoutSuccessHandler((request, response, authentication) -> {
+                      response.setStatus(200);
+                      response.getWriter().write("Sesión cerrada exitosamente");
+                  })
+                  .invalidateHttpSession(true)
+                  .clearAuthentication(true)
+              );
+          return http.build();
+      }
+
+      @Bean
+      public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+          return config.getAuthenticationManager();
+      }
+
+      @Bean
+      public PasswordEncoder passwordEncoder() {
+          return PasswordEncoderFactories.createDelegatingPasswordEncoder();
+      }
+  }
+  ```
+
+- Implementa `UserEntity.java`:
+  ```java
+  @Entity
+  @Table(name = "users")
+  public class UserEntity {
+      @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+      private Long id;
+      private String username;
+      private String password;
+      private String role;
+      // Getters y setters
+  }
+  ```
+
+- `UserRepository.java`:
+  ```java
+  public interface UserRepository extends JpaRepository<UserEntity, Long> {
+      Optional<UserEntity> findByUsername(String username);
+  }
+  ```
+
+- `UserService.java`:
+  ```java
+  @Service
+  public class UserService {
+      private final UserRepository userRepository;
+      private final PasswordEncoder passwordEncoder;
+
+      public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+          this.userRepository = userRepository;
+          this.passwordEncoder = passwordEncoder;
+      }
+
+      public UserEntity buscarPorUsername(String username) {
+          return userRepository.findByUsername(username).orElse(null);
+      }
+  }
+  ```
+
+- `DbUserDetailsService.java`:
+  ```java
+  @Service
+  public class DbUserDetailsService implements UserDetailsService {
+      private final UserRepository userRepository;
+
+      public DbUserDetailsService(UserRepository userRepository) {
+          this.userRepository = userRepository;
+      }
+
+      @Override
+      public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+          UserEntity user = userRepository.findByUsername(username)
+              .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + username));
+          return new org.springframework.security.core.userdetails.User(
+              user.getUsername(),
+              user.getPassword(),
+              List.of(new SimpleGrantedAuthority(user.getRole()))
+          );
+      }
+  }
+  ```
+
+- `SecurityUtils.java`:
+  ```java
+  public class SecurityUtils {
+      public static void setAuthenticationInSession(HttpServletRequest request, Authentication authentication) {
+          SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
+          securityContext.setAuthentication(authentication);
+          SecurityContextHolder.setContext(securityContext);
+          HttpSession session = request.getSession(true);
+          session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, securityContext);
+      }
+
+      public static void clearAuthentication(HttpServletRequest request) {
+          HttpSession session = request.getSession(false);
+          if (session != null) {
+              session.invalidate();
+          }
+          SecurityContextHolder.clearContext();
+      }
+  }
+  ```
+
+#### Paso 4: Crear DTO y Controladores
+
+- Crea `TareaDTO.java`:
+  ```java
+  public record TareaDTO(String titulo, String descripcion, boolean completada, long id) {
+      public static TareaDTO of(String titulo, String descripcion) {
+          return new TareaDTO(titulo, descripcion, false, System.currentTimeMillis());
+      }
+  }
+  ```
+
+- Implementa `AuthController.java`:
+  ```java
+  @RestController
+  @RequestMapping("/api/auth")
+  public class AuthController {
+      private final AuthenticationManager authenticationManager;
+
+      public AuthController(AuthenticationManager authenticationManager) {
+          this.authenticationManager = authenticationManager;
+      }
+
+      @PostMapping("/login")
+      public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest, HttpServletRequest request) {
+          try {
+              Authentication authentication = authenticationManager.authenticate(
+                  new UsernamePasswordAuthenticationToken(loginRequest.username(), loginRequest.password())
+              );
+              SecurityUtils.setAuthenticationInSession(request, authentication);
+              return ResponseEntity.ok(Map.of("mensaje", "✅ Login exitoso", "usuario", authentication.getName()));
+          } catch (AuthenticationException e) {
+              return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "❌ Credenciales inválidas"));
+          }
+      }
+
+      @PostMapping("/logout")
+      public ResponseEntity<?> logout(HttpServletRequest request) {
+          SecurityUtils.clearAuthentication(request);
+          return ResponseEntity.ok(Map.of("mensaje", "✅ Sesión cerrada exitosamente"));
+      }
+
+      @GetMapping("/public")
+      public ResponseEntity<String> publico() {
+          return ResponseEntity.ok("Este es un endpoint público - accesible sin autenticación");
+      }
+
+      public record LoginRequest(String username, String password) {}
+  }
+  ```
+
+- Implementa `TodoController.java`:
+  ```java
+  @RestController
+  @RequestMapping("/todo")
+  public class TodoController {
+
+      @SuppressWarnings("unchecked")
+      @PostMapping("/agregar")
+      public ResponseEntity<String> agregarTarea(HttpSession session, @RequestParam String titulo, @RequestParam String descripcion) {
+          List<TareaDTO> tareas = (List<TareaDTO>) session.getAttribute("tareas");
+          if (tareas == null) {
+              tareas = new ArrayList<>();
+          }
+          tareas.add(TareaDTO.of(titulo, descripcion));
+          session.setAttribute("tareas", tareas);
+          return ResponseEntity.ok("✅ Tarea agregada. Total tareas: " + tareas.size());
+      }
+
+      @SuppressWarnings("unchecked")
+      @GetMapping("/listar")
+      public ResponseEntity<?> verTareas(HttpSession session) {
+          List<TareaDTO> tareas = (List<TareaDTO>) session.getAttribute("tareas");
+          if (tareas == null || tareas.isEmpty()) {
+              return ResponseEntity.ok(Map.of("mensaje", "No hay tareas pendientes", "tareas", List.of()));
+          }
+          return ResponseEntity.ok(Map.of("tareas", tareas, "total", tareas.size()));
+      }
+
+      @SuppressWarnings("unchecked")
+      @PostMapping("/completar/{id}")
+      public ResponseEntity<String> completarTarea(HttpSession session, @PathVariable long id) {
+          List<TareaDTO> tareas = (List<TareaDTO>) session.getAttribute("tareas");
+          if (tareas == null) {
+              return ResponseEntity.badRequest().body("❌ No hay tareas");
+          }
+          for (TareaDTO tarea : tareas) {
+              if (tarea.id() == id) {
+                  TareaDTO completada = new TareaDTO(tarea.titulo(), tarea.descripcion(), true, tarea.id());
+                  tareas.set(tareas.indexOf(tarea), completada);
+                  session.setAttribute("tareas", tareas);
+                  return ResponseEntity.ok("✅ Tarea completada");
+              }
+          }
+          return ResponseEntity.notFound().build();
+      }
+
+      @SuppressWarnings("unchecked")
+      @DeleteMapping("/eliminar/{id}")
+      public ResponseEntity<String> eliminarTarea(HttpSession session, @PathVariable long id) {
+          List<TareaDTO> tareas = (List<TareaDTO>) session.getAttribute("tareas");
+          if (tareas == null) {
+              return ResponseEntity.badRequest().body("❌ No hay tareas");
+          }
+          tareas.removeIf(t -> t.id() == id);
+          session.setAttribute("tareas", tareas);
+          return ResponseEntity.ok("🗑️ Tarea eliminada");
+      }
+
+      @DeleteMapping("/limpiar")
+      public ResponseEntity<String> limpiarTareas(HttpSession session) {
+          session.removeAttribute("tareas");
+          return ResponseEntity.ok("🗑️ Lista de tareas limpiada");
+      }
+  }
+  ````

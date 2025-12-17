@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+// Endpoint disponibles: /debug/users , /debug/admin/reset
 @RestController
 @RequestMapping("/debug")
 public class DebugController {
