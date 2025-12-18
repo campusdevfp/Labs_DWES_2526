@@ -43,7 +43,7 @@ public class SessionController {
         return ResponseEntity.ok(info);
     }
 
-    /**
+    /** ##
      * Lista todos los atributos almacenados en la sesión
      */
     @GetMapping("/attributes")
