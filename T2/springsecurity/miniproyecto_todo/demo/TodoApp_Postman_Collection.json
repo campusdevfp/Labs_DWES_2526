@@ -1,0 +1,677 @@
+{
+  "info": {
+    "name": "TodoApp - Spring Security & Sessions",
+    "description": "Colección completa para testear el miniproyecto TodoApp con sesiones, cookies y Spring Security",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "🔓 Endpoints Públicos",
+      "item": [
+        {
+          "name": "Endpoint Público (sin auth)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/auth/public",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "auth",
+                "public"
+              ]
+            },
+            "description": "Endpoint accesible sin autenticación. Debe devolver un mensaje público."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🔐 Autenticación",
+      "item": [
+        {
+          "name": "1. Login - Usuario Normal",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Verificar que el login fue exitoso",
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Login exitoso\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.mensaje).to.include(\"Login exitoso\");",
+                  "    pm.expect(jsonData.usuario).to.eql(\"user\");",
+                  "});",
+                  "",
+                  "pm.test(\"Cookie JSESSIONID presente\", function () {",
+                  "    pm.expect(pm.cookies.has('JSESSIONID')).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"username\": \"user\",\n    \"password\": \"password\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/auth/login",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Login con usuario normal (user/password). Guarda la cookie JSESSIONID automáticamente."
+          },
+          "response": []
+        },
+        {
+          "name": "2. Login - Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Login exitoso como admin\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.usuario).to.eql(\"admin\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"username\": \"admin\",\n    \"password\": \"admin\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/auth/login",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Login con usuario administrador (admin/admin)."
+          },
+          "response": []
+        },
+        {
+          "name": "3. Login - Credenciales Inválidas",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 401\", function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "pm.test(\"Error de credenciales\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.error).to.include(\"Credenciales inválidas\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"username\": \"hacker\",\n    \"password\": \"wrongpassword\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/auth/login",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Intento de login con credenciales incorrectas. Debe devolver 401."
+          },
+          "response": []
+        },
+        {
+          "name": "4. Logout",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Logout exitoso\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.mensaje).to.include(\"Sesión cerrada\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/auth/logout",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "auth",
+                "logout"
+              ]
+            },
+            "description": "Cierra la sesión actual e invalida la cookie JSESSIONID."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "📝 Gestión de Tareas (requiere login)",
+      "item": [
+        {
+          "name": "1. Agregar Tarea - Estudiar Spring",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Tarea agregada\", function () {",
+                  "    pm.expect(pm.response.text()).to.include(\"Tarea agregada\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/todo/agregar?titulo=Estudiar Spring Security&descripcion=Aprender sobre sesiones y cookies en Spring Boot",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "todo",
+                "agregar"
+              ],
+              "query": [
+                {
+                  "key": "titulo",
+                  "value": "Estudiar Spring Security"
+                },
+                {
+                  "key": "descripcion",
+                  "value": "Aprender sobre sesiones y cookies en Spring Boot"
+                }
+              ]
+            },
+            "description": "Agrega una nueva tarea a la lista del usuario autenticado."
+          },
+          "response": []
+        },
+        {
+          "name": "2. Agregar Tarea - Hacer ejercicios",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/todo/agregar?titulo=Hacer ejercicios de JPA&descripcion=Completar los ejercicios del tema 2",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "todo",
+                "agregar"
+              ],
+              "query": [
+                {
+                  "key": "titulo",
+                  "value": "Hacer ejercicios de JPA"
+                },
+                {
+                  "key": "descripcion",
+                  "value": "Completar los ejercicios del tema 2"
+                }
+              ]
+            },
+            "description": "Agrega una segunda tarea."
+          },
+          "response": []
+        },
+        {
+          "name": "3. Agregar Tarea - Proyecto final",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/todo/agregar?titulo=Proyecto final&descripcion=Desarrollar el proyecto final del curso",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "todo",
+                "agregar"
+              ],
+              "query": [
+                {
+                  "key": "titulo",
+                  "value": "Proyecto final"
+                },
+                {
+                  "key": "descripcion",
+                  "value": "Desarrollar el proyecto final del curso"
+                }
+              ]
+            },
+            "description": "Agrega una tercera tarea."
+          },
+          "response": []
+        },
+        {
+          "name": "4. Listar Todas las Tareas",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Respuesta contiene tareas\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('tareas');",
+                  "    pm.expect(jsonData).to.have.property('total');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/todo/listar",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "todo",
+                "listar"
+              ]
+            },
+            "description": "Lista todas las tareas del usuario autenticado. Devuelve un array con las tareas y el total."
+          },
+          "response": []
+        },
+        {
+          "name": "5. Completar Tarea (usar ID real)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Tarea completada\", function () {",
+                  "    pm.expect(pm.response.text()).to.include(\"Tarea completada\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/todo/completar/1234567890",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "todo",
+                "completar",
+                "1234567890"
+              ]
+            },
+            "description": "Marca una tarea como completada. ⚠️ IMPORTANTE: Primero ejecuta 'Listar Tareas' para obtener el ID real de una tarea y reemplaza '1234567890' con ese ID."
+          },
+          "response": []
+        },
+        {
+          "name": "6. Eliminar Tarea (usar ID real)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Tarea eliminada\", function () {",
+                  "    pm.expect(pm.response.text()).to.include(\"Tarea eliminada\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/todo/eliminar/1234567890",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "todo",
+                "eliminar",
+                "1234567890"
+              ]
+            },
+            "description": "Elimina una tarea específica. ⚠️ IMPORTANTE: Reemplaza '1234567890' con un ID real obtenido de 'Listar Tareas'."
+          },
+          "response": []
+        },
+        {
+          "name": "7. Limpiar Todas las Tareas",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Lista limpiada\", function () {",
+                  "    pm.expect(pm.response.text()).to.include(\"limpiada\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/todo/limpiar",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "todo",
+                "limpiar"
+              ]
+            },
+            "description": "Elimina todas las tareas de la sesión actual."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🧪 Pruebas de Seguridad",
+      "item": [
+        {
+          "name": "Acceso sin Login (debe fallar)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 401\", function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/todo/listar",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "todo",
+                "listar"
+              ]
+            },
+            "description": "Intenta acceder a un endpoint protegido sin estar autenticado. Debe devolver 401 Unauthorized."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🔄 Flujo Completo de Prueba",
+      "item": [
+        {
+          "name": "PASO 1: Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"username\": \"user\",\n    \"password\": \"password\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/auth/login",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "PASO 2: Agregar 3 tareas",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/todo/agregar?titulo=Tarea 1&descripcion=Primera tarea de prueba",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "todo",
+                "agregar"
+              ],
+              "query": [
+                {
+                  "key": "titulo",
+                  "value": "Tarea 1"
+                },
+                {
+                  "key": "descripcion",
+                  "value": "Primera tarea de prueba"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "PASO 3: Listar tareas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/todo/listar",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "todo",
+                "listar"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "PASO 4: Logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/auth/logout",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "auth",
+                "logout"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "PASO 5: Verificar que no hay acceso",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/todo/listar",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "todo",
+                "listar"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080",
+      "type": "string"
+    }
+  ]
+}
