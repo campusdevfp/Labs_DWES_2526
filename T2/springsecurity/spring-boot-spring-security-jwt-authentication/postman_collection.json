@@ -1,0 +1,161 @@
+{
+  "info": {
+    "_postman_id": "b3d6f1c2-0000-4000-8000-000000000000",
+    "name": "Spring Boot JWT Auth - Postman Collection",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Colección para probar la app Spring Boot con autenticación JWT (signup, signin y endpoints protegidos)."
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Signup - Register new user",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"user1\",\n  \"email\": \"user1@example.com\",\n  \"password\": \"123456\",\n  \"role\": [\"user\"]\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/api/auth/signup", "host": ["{{baseUrl}}"], "path": ["api","auth","signup"] }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Signup returns 200 or 400 (user exists)\", function () {\n  pm.expect(pm.response.code).to.be.oneOf([200, 400]);\n});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Signin - Get JWT",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"user1\",\n  \"password\": \"123456\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/api/auth/signin", "host": ["{{baseUrl}}"], "path": ["api","auth","signin"] }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Signin returns 200\", function () { pm.response.to.have.status(200); });",
+                  "var json = {}; try { json = pm.response.json(); } catch(e) { }",
+                  "var token = json.accessToken || json.token || json.access_token;",
+                  "if (token) { pm.environment.set('accessToken', token); pm.test('accessToken has been set', function() { pm.expect(pm.environment.get('accessToken')).to.not.be.empty; }); } else { pm.test('No token found in response', function() { pm.expect(token).to.not.be.undefined; }); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Clear token",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": { "mode": "raw", "raw": "" },
+            "url": { "raw": "{{baseUrl}}/__internal/clear-token", "host": ["{{baseUrl}}"], "path": ["__internal","clear-token"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": { "exec": [ "pm.environment.unset('accessToken'); pm.test('accessToken removed', function() { pm.expect(pm.environment.get('accessToken')).to.be.undefined; });" ] }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Revoke token",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"{{accessToken}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/revoke-token",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "revoke-token"]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Revoke token returns 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.environment.unset('accessToken');",
+                  "pm.test(\"accessToken removed after revoke\", function() { pm.expect(pm.environment.get('accessToken')).to.be.undefined; });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Test Endpoints",
+      "item": [
+        {
+          "name": "GET /api/test/all (Public)",
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{baseUrl}}/api/test/all", "host": ["{{baseUrl}}"], "path": ["api","test","all"] } },
+          "response": []
+        },
+        {
+          "name": "GET /api/test/user (Requires Token)",
+          "request": {
+            "method": "GET",
+            "header": [ { "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" } ],
+            "url": { "raw": "{{baseUrl}}/api/test/user", "host": ["{{baseUrl}}"], "path": ["api","test","user"] }
+          },
+          "response": [],
+          "event": [ {
+            "listen": "test",
+            "script": { "exec": [ "pm.test(\"Status is 200 or 401 (when token missing/invalid)\", function () { pm.expect(pm.response.code).to.be.oneOf([200, 401]); });" ] }
+          } ]
+        },
+        {
+          "name": "GET /api/test/mod (Requires MOD role)",
+          "request": {
+            "method": "GET",
+            "header": [ { "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" } ],
+            "url": { "raw": "{{baseUrl}}/api/test/mod", "host": ["{{baseUrl}}"], "path": ["api","test","mod"] }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/test/admin (Requires ADMIN role)",
+          "request": {
+            "method": "GET",
+            "header": [ { "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" } ],
+            "url": { "raw": "{{baseUrl}}/api/test/admin", "host": ["{{baseUrl}}"], "path": ["api","test","admin"] }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "event": []
+}
