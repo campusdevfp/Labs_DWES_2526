@@ -25,9 +25,13 @@ Necesitará implementar el token de actualización:
 
 ![spring-boot-refresh-token-jwt-example-flow](https://bezkoder.com/wp-content/uploads/2021/04/spring-boot-refresh-token-jwt-example-flow.png)
 
-Más detalles en: [Ejemplo de token de actualización de Spring Boot con JWT](https://bezkoder.com/spring-boot-refresh-token-jwt/)
+- Veremos más adelante un ejemplo de token de actualización de Spring Boot con JWT
 
-También puedes visitar El ejemplo que [utiliza cookies HttpOnly en su lugar](https://www.bezkoder.com/spring-boot-login-example-mysql/).
+- Para actulizar token también puedes utilizar cookies HttpOnly en su lugar
+
+> HttpOnly es un atributo de una cookie que indica al navegador que la cookie no debe ser accesible desde JavaScript (por ejemplo, document.cookie). 
+> Se controla solo en el cliente (navegador) y se pone por el servidor en la cabecera Set-Cookie.
+> Uso típico: almacenar el refresh token en una cookie HttpOnly y el access token en memoria; el servidor lee la cookie en los endpoints de refresh.
 
 ## Arquitectura del servidor Spring Boot con Spring Security
 
@@ -43,17 +47,17 @@ Ahora lo explicaré brevemente.
 (`WebSecurityConfigurerAdapter` está obsoleto desde Spring 2.7.0, puedes consultar el código fuente para actualizarlo. Más detalles en:  
 [WebSecurityConfigurerAdapter obsoleto en Spring Boot](https://www.bezkoder.com/websecurityconfigureradapter-deprecated-spring-boot/))
 
-– `[UserDetailsService](https://docs.spring.io/spring-security/site/docs/current/reference/htmlsingle/#tech-userdetailsservice)` La interfaz tiene un método para cargar al usuario mediante _nombre de usuario_ y devuelve un `UserDetails` objeto que Spring Security puede utilizar para autenticación y validación.
+– [UserDetailsService](https://docs.spring.io/spring-security/site/docs/current/reference/htmlsingle/#tech-userdetailsservice) La interfaz tiene un método para cargar al usuario mediante _nombre de usuario_ y devuelve un `UserDetails` objeto que Spring Security puede utilizar para autenticación y validación.
 
 – `UserDetails` contiene la información necesaria (como: nombre de usuario, contraseña, autoridades) para crear un objeto de autenticación.
 
-– `[UsernamePasswordAuthenticationToken](https://docs.spring.io/spring-security/site/docs/current/api/org/springframework/security/authentication/UsernamePasswordAuthenticationToken.html)` obtiene {nombre de usuario, contraseña} de la solicitud de inicio de sesión, `AuthenticationManager` lo utilizará para autenticar una cuenta de inicio de sesión.
+– [UsernamePasswordAuthenticationToken](https://docs.spring.io/spring-security/site/docs/current/api/org/springframework/security/authentication/UsernamePasswordAuthenticationToken.html) obtiene {nombre de usuario, contraseña} de la solicitud de inicio de sesión, `AuthenticationManager` lo utilizará para autenticar una cuenta de inicio de sesión.
 
-– `[AuthenticationManager](https://docs.spring.io/spring-security/site/docs/current/reference/htmlsingle/#core-services-authentication-manager)` tiene un `DaoAuthenticationProvider` (con ayuda de `UserDetailsService` & `PasswordEncoder`) para validar `UsernamePasswordAuthenticationToken` objeto. Si tiene éxito, `AuthenticationManager` devuelve un objeto de autenticación completamente poblado (incluidas las autoridades otorgadas).
+– [AuthenticationManager](https://docs.spring.io/spring-security/site/docs/current/reference/htmlsingle/#core-services-authentication-manager) tiene un `DaoAuthenticationProvider` (con ayuda de `UserDetailsService` & `PasswordEncoder`) para validar `UsernamePasswordAuthenticationToken` objeto. Si tiene éxito, `AuthenticationManager` devuelve un objeto de autenticación completamente poblado (incluidas las autoridades otorgadas).
 
-– `[OncePerRequestFilter](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/filter/OncePerRequestFilter.html)` realiza una única ejecución para cada solicitud a nuestra API. Proporciona un `doFilterInternal()` método que implementaremos analizando y validando JWT, cargando detalles del usuario (usando `UserDetailsService`), comprobando la Autorización (usando `UsernamePasswordAuthenticationToken`).
+– [OncePerRequestFilter](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/filter/OncePerRequestFilter.html) realiza una única ejecución para cada solicitud a nuestra API. Proporciona un `doFilterInternal()` método que implementaremos analizando y validando JWT, cargando detalles del usuario (usando `UserDetailsService`), comprobando la Autorización (usando `UsernamePasswordAuthenticationToken`).
 
-– `[AuthenticationEntryPoint](https://docs.spring.io/spring-security/site/docs/current/api/org/springframework/security/web/AuthenticationEntryPoint.html)` detectará un error de autenticación.
+– [AuthenticationEntryPoint](https://docs.spring.io/spring-security/site/docs/current/api/org/springframework/security/web/AuthenticationEntryPoint.html) detectará un error de autenticación.
 
 **Repositorio** contiene `UserRepository` & `RoleRepository` Para trabajar con la base de datos, se importará a **Controlador**.
 
