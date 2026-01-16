@@ -20,6 +20,8 @@ public class TodoController {
             @RequestParam String titulo,
             @RequestParam String descripcion) {
 
+
+        // El SupressWarnings es para evitar la advertencia de conversión insegura al recuperar la lista de tareas de la sesión
         List<TareaDTO> tareas = (List<TareaDTO>) session.getAttribute("tareas");
         if (tareas == null) {
             tareas = new ArrayList<>();
