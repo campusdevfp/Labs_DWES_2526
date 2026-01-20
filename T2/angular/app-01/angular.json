@@ -7,7 +7,7 @@
   },
   "newProjectRoot": "projects",
   "projects": {
-    "todo-app": {
+    "app-01": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -84,10 +84,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "todo-app:build:production"
+              "buildTarget": "app-01:build:production"
             },
             "development": {
-              "buildTarget": "todo-app:build:development"
+              "buildTarget": "app-01:build:development"
             }
           },
           "defaultConfiguration": "development"

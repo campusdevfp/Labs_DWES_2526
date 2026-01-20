@@ -1,0 +1,16 @@
+<h1>{{ title() }}</h1>
+<div style="max-width: 400px; margin: 40px auto; font-family: sans-serif">
+  <h1>Fiesta de Angular</h1>
+
+  <!-- Escuchamos el evento del hijo -->
+  <app-guest-form (onAddGuest)="addGuest($event)" />
+
+  <hr />
+
+  <!-- Pasamos el signal al hijo y escuchamos el borrado -->
+  <app-guest-list [guests]="guests()" (onRemove)="removeGuest($event)" />
+
+  @if (guests().length > 5) {
+    <p style="color: orange">¡Aforo casi completo!</p>
+  }
+</div>

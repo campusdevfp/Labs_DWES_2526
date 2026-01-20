@@ -1,0 +1,10 @@
+<h3>Lista de Invitados</h3>
+
+@for (guest of guests(); track guest; let i = $index) {
+  <div style="padding: 5px; border-bottom: 1px solid #eee">
+    {{ i + 1 }}. {{ guest }}
+    <button (click)="onRemove.emit(i)">Eliminar</button>
+  </div>
+} @empty {
+  <p>No hay nadie en la lista todavía.</p>
+}
