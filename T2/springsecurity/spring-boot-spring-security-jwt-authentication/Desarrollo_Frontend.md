@@ -1,88 +1,337 @@
-### Descripción breve
-Se crea un frontend Angular \`v21\` **standalone** (sin NgModules), usando **signals**, **Signal Forms** (forms tipados), **HttpClient** con \`fetch\`, **interceptor funcional** para adjuntar el JWT, **guard** por rol y 3 pantallas: **registro**, **login** y **/user** (protegida por rol \`ROLE\_USER\`/\`USER\`, según el backend).
+# Desarrollo del Frontend (Angular moderno, 2026)
 
-A continuación va el scaffold mínimo de archivos.
+Este documento explica **cómo crear un frontend Angular moderno** (estilo 2026) para este backend Spring Boot + Spring Security + JWT.
+
+Objetivo (versión 1):
+- Registro (`/register`)
+- Login (`/login`)
+- Acceso a una zona protegida de usuario (`/user`) **solo si tiene rol de usuario**
+
+> Nota: La seguridad real siempre está en el backend. El frontend solo ayuda a la UX (redirigir, ocultar enlaces, etc.).
 
 ---
 
-### 1) Dependencias y config base
+## 0) Qué endpoints del backend vamos a consumir
 
-```json
-// package.json (fragmento)
-{
-  "dependencies": {
-    "@angular/animations": "^21.0.0",
-    "@angular/common": "^21.0.0",
-    "@angular/compiler": "^21.0.0",
-    "@angular/core": "^21.0.0",
-    "@angular/forms": "^21.0.0",
-    "@angular/platform-browser": "^21.0.0",
-    "@angular/platform-browser-dynamic": "^21.0.0",
-    "@angular/router": "^21.0.0",
-    "rxjs": "^7.8.0"
-  }
-}
+Basado en este proyecto (controladores en `src/main/java/.../controllers`):
+
+- `POST /api/auth/signup`
+  - Crea usuario.
+  - Body típico:
+    - `username`: string
+    - `email`: string
+    - `password`: string
+    - `role`: opcional. En muchos ejemplos se envía `role: ["user"]` para ROLE_USER.
+
+- `POST /api/auth/signin`
+  - Autentica.
+  - Body:
+    - `username`: string
+    - `password`: string
+  - Respuesta típica `JwtResponse`:
+    - `accessToken`: string
+    - `tokenType`: "Bearer"
+    - `roles`: array de roles (normalmente `ROLE_USER`, `ROLE_ADMIN`...)
+
+- `GET /api/test/user`
+  - Endpoint protegido.
+  - Requiere header:
+    - `Authorization: Bearer <accessToken>`
+
+---
+
+## 1) Requisitos previos
+
+- Node.js LTS instalado (recomendable 20+)
+- npm
+- Java/Maven ya los tienes para el backend
+
+---
+
+## 2) CORS: imprescindible para que Angular pueda llamar al backend
+
+### ¿Por qué?
+En desarrollo, Angular corre normalmente en `http://localhost:4200` y tu backend en `http://localhost:8080`.
+Eso son **orígenes distintos** → el navegador aplica CORS.
+
+### Estado actual
+En este repo ya se ha añadido CORS en `WebSecurityConfig.java` para permitir `http://localhost:4200` y el header `Authorization`.
+
+### Si cambias el puerto del frontend
+Si ejecutas Angular en otro puerto (ej. `4201`) o con otra URL (`127.0.0.1`), tendrás que añadirlo al CORS del backend.
+
+---
+
+## 3) Cómo verificar el JWT (para no perder tiempo con "Invalid Signature")
+
+### Importante
+Cuando verifiques un token en jwt.io/token.dev debes usar:
+- El **mismo algoritmo** (HS256 en este proyecto)
+- La **misma key** que usa el backend
+- Y marcar/desmarcar "base64 secret" según el formato que uses.
+
+### Recomendación práctica
+Para una práctica con Angular, lo más sencillo es:
+- Usar una clave HS256 válida
+- Y si la guardas en Base64 en `application.properties`, entonces en jwt.io:
+  - O bien pegas la clave decodificada (texto) y desmarcas base64
+  - O bien pegas la base64 y marcas base64
+
+---
+
+## 4) Crear el frontend Angular (standalone + componentes)
+
+> Vamos a crear el frontend dentro de este repo, en una carpeta `frontend/`.
+
+### 4.1 Comando (PowerShell)
+Ejecuta esto en la raíz del proyecto (misma carpeta que `pom.xml`):
+
+```powershell
+cd "D:\ws\curso2526\Labs_DWES_2526\T2\springsecurity\spring-boot-spring-security-jwt-authentication"
+npx -y @angular/cli@latest new frontend --routing --style=scss --skip-git --package-manager=npm
 ```
 
-```typescript
-// src/main.ts
-import { bootstrapApplication } from '@angular/platform-browser';
-import { provideAnimations } from '@angular/platform-browser/animations';
-import { AppComponent } from './app/app.component';
-import { appConfig } from './app/app.config';
+Esto crea un Angular moderno (por defecto con **standalone components** en Angular actual).
 
-bootstrapApplication(AppComponent, {
-  providers: [...appConfig.providers, provideAnimations()],
-}).catch(console.error);
+### 4.2 Arrancar el frontend
+
+```powershell
+cd .\frontend
+npm start
 ```
 
-```typescript
-// src/app/app.config.ts
+Abrirá `http://localhost:4200`.
+
+---
+
+## 5) Estructura recomendada del frontend
+
+Dentro de `frontend/src/app/`:
+
+- `core/`
+  - `auth/` → estado de auth (token, roles) + helpers
+  - `http/` → interceptor JWT
+  - `guards/` → guard por rol
+- `features/`
+  - `auth/` → páginas de login y registro
+  - `user/` → página `/user`
+
+---
+
+## 6) Implementación: flujo completo (registro → login → /user)
+
+### 6.1 Registro
+1. Usuario rellena formulario.
+2. Frontend llama a `POST /api/auth/signup`.
+3. Si todo va bien:
+   - mostrar mensaje "Registro OK"
+   - redirigir a `/login`.
+
+**Roles**:
+- Si tu backend asigna ROLE_USER por defecto, puedes no enviar `role`.
+- Si tu backend exige rol explícito, envía `role: ["user"]`.
+
+### 6.2 Login
+1. Usuario rellena login.
+2. Frontend llama a `POST /api/auth/signin`.
+3. Backend devuelve `accessToken` + `roles`.
+4. Frontend guarda:
+   - `accessToken`
+   - `roles`
+   - `username`
+   en `localStorage` (simple) y también en un store con signals.
+5. Redirige a `/user`.
+
+### 6.3 Acceso a `/user`
+1. Route guard comprueba:
+   - hay token
+   - y tiene rol permitido
+2. Si no:
+   - redirige a `/login`
+3. Si sí:
+   - muestra la página y llama a `GET /api/test/user`.
+
+---
+
+## 7) Paso a paso técnico (qué hay que programar)
+
+### Paso A — Configurar la URL del backend en el frontend
+Crea `frontend/src/environments/environment.ts` (o ajusta el existente) con:
+
+- `apiBaseUrl = "http://localhost:8080"`
+
+### Paso B — Crear `AuthService`
+Funciones:
+- `register()` → POST `/api/auth/signup`
+- `login()` → POST `/api/auth/signin`
+- `getUserContent()` → GET `/api/test/user` (text)
+
+### Paso C — Crear `AuthStore` (signals)
+- Señales:
+  - token
+  - roles
+  - username
+- Computed:
+  - `isAuthenticated`
+- Métodos:
+  - `setSession(jwtResponse)`
+  - `logout()`
+
+Persistencia:
+- Guardar sesión en `localStorage`.
+
+### Paso D — Interceptor JWT
+- Si hay token → añadir `Authorization: Bearer <token>`
+
+### Paso E — Guard por rol
+- Protege `/user`
+- Permitidos: `ROLE_USER` (y opcionalmente `USER` si normalizas)
+
+### Paso F — Componentes/páginas
+- `LoginPageComponent`:
+  - formulario (reactive forms)
+  - submit → login → guardar session → navegar a `/user`
+
+- `RegisterPageComponent`:
+  - formulario
+  - submit → register → navegar a `/login`
+
+- `UserPageComponent`:
+  - botón o carga inicial → GET `/api/test/user`
+
+---
+
+## 8) Checklist de depuración (si algo falla)
+
+### 8.1 CORS
+- ¿Angular está en `http://localhost:4200`?
+- ¿Backend permite ese origin?
+- ¿Backend permite `Authorization` header?
+
+### 8.2 401 Unauthorized
+- ¿Estás enviando `Authorization: Bearer <token>`?
+- ¿El token está guardado y no está vacío?
+- ¿El token ha expirado?
+
+### 8.3 Forbidden (403)
+- El token es válido, pero el usuario no tiene el rol requerido.
+- Comprueba `roles` en la respuesta del login.
+
+### 8.4 “Invalid Signature” en jwt.io
+- Estás verificando con una clave o algoritmo diferente.
+- Asegúrate de seleccionar HS256.
+- Si la clave del backend está en Base64, usa la opción correcta de la herramienta.
+
+---
+
+## 9) Próximas mejoras (cuando registro/login/user estén OK)
+
+- Añadir logout en navbar.
+- Página `403`/`unauthorized`.
+- Implementar refresh token con cookie HttpOnly (requiere cambios backend + `allowCredentials(true)` en CORS).
+- Tests (unit) para store/guard.
+
+---
+
+## 10) Mini guía rápida (lo mínimo para que funcione)
+
+1. Arranca el backend.
+2. Crea el frontend con el comando de la sección 4.
+3. Implementa `AuthService`, `AuthStore`, interceptor, guard y páginas.
+4. Registra usuario en `/register`.
+5. Haz login en `/login`.
+6. Entra a `/user` y comprueba que carga el contenido protegido.
+
+---
+
+## 11) Plantilla “copiar/pegar” (código mínimo recomendado)
+
+Esta sección te deja un **esqueleto funcional** (Angular moderno con componentes standalone) para que al crear el proyecto `frontend/` puedas copiar estos archivos tal cual.
+
+> Asunción: backend en `http://localhost:8080` y frontend en `http://localhost:4200`.
+
+### 11.1 Estructura de archivos
+Crea (o ajusta) estas rutas dentro de `frontend/src/app/`:
+
+- `app.routes.ts`
+- `app.config.ts`
+- `app.component.ts`
+- `core/auth/auth.models.ts`
+- `core/auth/auth.store.ts`
+- `core/auth/auth.service.ts`
+- `core/http/jwt.interceptor.ts`
+- `core/guards/role.guard.ts`
+- `features/auth/login.page.ts`
+- `features/auth/register.page.ts`
+- `features/user/user.page.ts`
+
+Y en `frontend/src/environments/`:
+- `environment.ts`
+
+> Si tu Angular crea `environment.development.ts`, puedes duplicar ahí la misma configuración.
+
+---
+
+### 11.2 `src/environments/environment.ts`
+```ts
+export const environment = {
+  apiBaseUrl: 'http://localhost:8080',
+};
+```
+
+---
+
+### 11.3 `src/app/app.config.ts`
+```ts
 import { ApplicationConfig } from '@angular/core';
 import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
 import { routes } from './app.routes';
-import { authInterceptor } from './core/auth.interceptor';
+import { jwtInterceptor } from './core/http/jwt.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes, withComponentInputBinding()),
-    provideHttpClient(withFetch(), withInterceptors([authInterceptor])),
+    provideHttpClient(withFetch(), withInterceptors([jwtInterceptor])),
   ],
 };
 ```
 
-```typescript
-// src/app/app.routes.ts
+---
+
+### 11.4 `src/app/app.routes.ts`
+```ts
 import { Routes } from '@angular/router';
-import { LoginPageComponent } from './features/auth/login-page.component';
-import { RegisterPageComponent } from './features/auth/register-page.component';
-import { UserPageComponent } from './features/user/user-page.component';
-import { roleGuard } from './core/role.guard';
+import { LoginPage } from './features/auth/login.page';
+import { RegisterPage } from './features/auth/register.page';
+import { UserPage } from './features/user/user.page';
+import { roleGuard } from './core/guards/role.guard';
 
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'login' },
 
-  { path: 'register', component: RegisterPageComponent },
-  { path: 'login', component: LoginPageComponent },
+  { path: 'login', component: LoginPage },
+  { path: 'register', component: RegisterPage },
 
   {
     path: 'user',
-    component: UserPageComponent,
+    component: UserPage,
     canActivate: [roleGuard],
-    data: { roles: ['USER', 'ROLE_USER'] },
+    data: { roles: ['ROLE_USER', 'USER'] },
   },
 
   { path: '**', redirectTo: 'login' },
 ];
 ```
 
-```typescript
-// src/app/app.component.ts
+---
+
+### 11.5 `src/app/app.component.ts`
+```ts
 import { Component, inject } from '@angular/core';
-import { RouterOutlet, RouterLink } from '@angular/router';
+import { RouterLink, RouterOutlet } from '@angular/router';
 import { NgIf } from '@angular/common';
-import { AuthStore } from './core/auth.store';
+import { AuthStore } from './core/auth/auth.store';
 
 @Component({
   selector: 'app-root',
@@ -93,6 +342,7 @@ import { AuthStore } from './core/auth.store';
       <a routerLink="/login">Login</a>
       <a routerLink="/register">Registro</a>
       <a routerLink="/user">User</a>
+
       <button *ngIf="auth.isAuthenticated()" (click)="logout()">Logout</button>
     </nav>
 
@@ -112,21 +362,8 @@ export class AppComponent {
 
 ---
 
-### 2) Config de entorno (URL del backend Spring)
-
-```typescript
-// src/environments/environment.ts
-export const environment = {
-  apiBaseUrl: 'http://localhost:8080',
-};
-```
-
----
-
-### 3) Modelos (request/response típicos del backend bezkoder)
-
-```typescript
-// src/app/core/auth.models.ts
+### 11.6 `src/app/core/auth/auth.models.ts`
+```ts
 export interface LoginRequest {
   username: string;
   password: string;
@@ -136,49 +373,31 @@ export interface SignupRequest {
   username: string;
   email: string;
   password: string;
-  role?: string[]; // ejemplo: ["user"]
+  role?: string[];
 }
 
 export interface JwtResponse {
   id: number;
   username: string;
   email: string;
-  roles: string[]; // ejemplo: ["ROLE_USER"]
-  tokenType: string; // "Bearer"
+  roles: string[];
+  tokenType: string;
   accessToken: string;
 }
 ```
 
 ---
 
-### 4) Servicio Auth + Store con signals
+### 11.7 `src/app/core/auth/auth.store.ts`
+```ts
+import { Injectable, computed, signal } from '@angular/core';
 
-```typescript
-// src/app/core/storage.ts
-export const storageKeys = {
-  token: 'accessToken',
-  roles: 'roles',
-  username: 'username',
-} as const;
+const LS_TOKEN = 'accessToken';
+const LS_ROLES = 'roles';
+const LS_USERNAME = 'username';
 
-export function loadToken(): string | null {
-  return localStorage.getItem(storageKeys.token);
-}
-
-export function saveSession(token: string, roles: string[], username: string): void {
-  localStorage.setItem(storageKeys.token, token);
-  localStorage.setItem(storageKeys.roles, JSON.stringify(roles));
-  localStorage.setItem(storageKeys.username, username);
-}
-
-export function clearSession(): void {
-  localStorage.removeItem(storageKeys.token);
-  localStorage.removeItem(storageKeys.roles);
-  localStorage.removeItem(storageKeys.username);
-}
-
-export function loadRoles(): string[] {
-  const raw = localStorage.getItem(storageKeys.roles);
+function loadRoles(): string[] {
+  const raw = localStorage.getItem(LS_ROLES);
   if (!raw) return [];
   try {
     return JSON.parse(raw) as string[];
@@ -186,15 +405,55 @@ export function loadRoles(): string[] {
     return [];
   }
 }
+
+@Injectable({ providedIn: 'root' })
+export class AuthStore {
+  private readonly tokenSig = signal<string | null>(localStorage.getItem(LS_TOKEN));
+  private readonly rolesSig = signal<string[]>(loadRoles());
+  private readonly usernameSig = signal<string | null>(localStorage.getItem(LS_USERNAME));
+
+  readonly token = computed(() => this.tokenSig());
+  readonly roles = computed(() => this.rolesSig());
+  readonly username = computed(() => this.usernameSig());
+
+  readonly isAuthenticated = computed(() => !!this.tokenSig());
+
+  setSession(token: string, username: string, roles: string[]): void {
+    localStorage.setItem(LS_TOKEN, token);
+    localStorage.setItem(LS_USERNAME, username);
+    localStorage.setItem(LS_ROLES, JSON.stringify(roles ?? []));
+
+    this.tokenSig.set(token);
+    this.usernameSig.set(username);
+    this.rolesSig.set(roles ?? []);
+  }
+
+  logout(): void {
+    localStorage.removeItem(LS_TOKEN);
+    localStorage.removeItem(LS_USERNAME);
+    localStorage.removeItem(LS_ROLES);
+
+    this.tokenSig.set(null);
+    this.usernameSig.set(null);
+    this.rolesSig.set([]);
+  }
+
+  hasAnyRole(allowed: string[]): boolean {
+    const mine = this.rolesSig();
+    return allowed.some(r => mine.includes(r));
+  }
+}
 ```
 
-```typescript
-// src/app/core/auth.service.ts
+---
+
+### 11.8 `src/app/core/auth/auth.service.ts`
+```ts
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { environment } from '../../environments/environment';
-import { JwtResponse, LoginRequest, SignupRequest } from './auth.models';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
+import { JwtResponse, LoginRequest, SignupRequest } from './auth.models';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -215,94 +474,52 @@ export class AuthService {
 }
 ```
 
-```typescript
-// src/app/core/auth.store.ts
-import { Injectable, computed, signal } from '@angular/core';
-import { clearSession, loadRoles, loadToken, saveSession } from './storage';
-import { JwtResponse } from './auth.models';
-
-@Injectable({ providedIn: 'root' })
-export class AuthStore {
-  private readonly tokenSig = signal<string | null>(loadToken());
-  private readonly rolesSig = signal<string[]>(loadRoles());
-  private readonly usernameSig = signal<string | null>(localStorage.getItem('username'));
-
-  readonly token = computed(() => this.tokenSig());
-  readonly roles = computed(() => this.rolesSig());
-  readonly username = computed(() => this.usernameSig());
-
-  readonly isAuthenticated = computed(() => !!this.tokenSig());
-
-  setSession(jwt: JwtResponse): void {
-    saveSession(jwt.accessToken, jwt.roles ?? [], jwt.username ?? '');
-    this.tokenSig.set(jwt.accessToken);
-    this.rolesSig.set(jwt.roles ?? []);
-    this.usernameSig.set(jwt.username ?? null);
-  }
-
-  logout(): void {
-    clearSession();
-    this.tokenSig.set(null);
-    this.rolesSig.set([]);
-    this.usernameSig.set(null);
-  }
-
-  hasAnyRole(allowed: string[]): boolean {
-    const userRoles = this.rolesSig();
-    return allowed.some((r) => userRoles.includes(r));
-  }
-}
-```
-
 ---
 
-### 5) Interceptor funcional (Bearer token)
-
-```typescript
-// src/app/core/auth.interceptor.ts
+### 11.9 `src/app/core/http/jwt.interceptor.ts`
+```ts
 import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { AuthStore } from './auth.store';
+import { AuthStore } from '../auth/auth.store';
+import { environment } from '../../../environments/environment';
 
-export const authInterceptor: HttpInterceptorFn = (req, next) => {
+export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
   const auth = inject(AuthStore);
   const token = auth.token();
 
-  if (!token) return next(req);
+  // Evita añadir token a URLs que no sean tu backend
+  if (!token || !req.url.startsWith(environment.apiBaseUrl)) {
+    return next(req);
+  }
 
-  const cloned = req.clone({
-    setHeaders: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  return next(cloned);
+  return next(
+    req.clone({
+      setHeaders: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+  );
 };
 ```
 
 ---
 
-### 6) Guard por rol (para \`/user\`)
-
-```typescript
-// src/app/core/role.guard.ts
+### 11.10 `src/app/core/guards/role.guard.ts`
+```ts
 import { CanActivateFn, Router } from '@angular/router';
 import { inject } from '@angular/core';
-import { AuthStore } from './auth.store';
+import { AuthStore } from '../auth/auth.store';
 
 export const roleGuard: CanActivateFn = (route) => {
   const auth = inject(AuthStore);
   const router = inject(Router);
 
-  const allowed = (route.data?.['roles'] as string[] | undefined) ?? [];
-
   if (!auth.isAuthenticated()) {
     return router.parseUrl('/login');
   }
 
-  if (allowed.length === 0) {
-    return true;
-  }
+  const allowed = (route.data?.['roles'] as string[] | undefined) ?? [];
+  if (allowed.length === 0) return true;
 
   if (!auth.hasAnyRole(allowed)) {
     return router.parseUrl('/login');
@@ -314,14 +531,12 @@ export const roleGuard: CanActivateFn = (route) => {
 
 ---
 
-### 7) Registro (standalone + Signal Forms)
-
-```typescript
-// src/app/features/auth/register-page.component.ts
+### 11.11 `src/app/features/auth/register.page.ts`
+```ts
 import { Component, inject, signal } from '@angular/core';
 import { ReactiveFormsModule, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { AuthService } from '../../core/auth.service';
+import { AuthService } from '../../core/auth/auth.service';
 
 @Component({
   standalone: true,
@@ -355,40 +570,38 @@ import { AuthService } from '../../core/auth.service';
     </form>
   `,
 })
-export class RegisterPageComponent {
-  private readonly authService = inject(AuthService);
+export class RegisterPage {
+  private readonly api = inject(AuthService);
   private readonly router = inject(Router);
 
   readonly busy = signal(false);
-  readonly error = signal<string | null>(null);
   readonly done = signal(false);
+  readonly error = signal<string | null>(null);
 
   readonly form = new FormGroup({
-    username: new FormControl<string>('', { nonNullable: true, validators: [Validators.required] }),
-    email: new FormControl<string>('', { nonNullable: true, validators: [Validators.required, Validators.email] }),
-    password: new FormControl<string>('', { nonNullable: true, validators: [Validators.required, Validators.minLength(6)] }),
+    username: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    email: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.email] }),
+    password: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.minLength(6)] }),
   });
 
   submit(): void {
     if (this.form.invalid || this.busy()) return;
 
+    this.busy.set(true);
     this.error.set(null);
     this.done.set(false);
-    this.busy.set(true);
 
     const { username, email, password } = this.form.getRawValue();
 
-    // Para bezkoder suele ser role:["user"] opcional; si tu backend lo requiere, se envía aquí.
-    this.authService.register({ username, email, password, role: ['user'] }).subscribe({
+    // Si tu backend asigna ROLE_USER por defecto, puedes quitar role.
+    this.api.register({ username, email, password, role: ['user'] }).subscribe({
       next: () => {
         this.done.set(true);
         this.busy.set(false);
-        // opcional: redirigir a login
         this.router.navigateByUrl('/login');
       },
       error: (e) => {
-        const msg = e?.error?.message ?? 'Error registrando usuario';
-        this.error.set(String(msg));
+        this.error.set(String(e?.error?.message ?? 'Error registrando usuario'));
         this.busy.set(false);
       },
     });
@@ -398,15 +611,13 @@ export class RegisterPageComponent {
 
 ---
 
-### 8) Login (guardar JWT + redirigir a \`/user\`)
-
-```typescript
-// src/app/features/auth/login-page.component.ts
+### 11.12 `src/app/features/auth/login.page.ts`
+```ts
 import { Component, inject, signal } from '@angular/core';
 import { ReactiveFormsModule, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { AuthService } from '../../core/auth.service';
-import { AuthStore } from '../../core/auth.store';
+import { AuthService } from '../../core/auth/auth.service';
+import { AuthStore } from '../../core/auth/auth.store';
 
 @Component({
   standalone: true,
@@ -434,36 +645,35 @@ import { AuthStore } from '../../core/auth.store';
     </form>
   `,
 })
-export class LoginPageComponent {
-  private readonly authService = inject(AuthService);
-  private readonly authStore = inject(AuthStore);
+export class LoginPage {
+  private readonly api = inject(AuthService);
+  private readonly auth = inject(AuthStore);
   private readonly router = inject(Router);
 
   readonly busy = signal(false);
   readonly error = signal<string | null>(null);
 
   readonly form = new FormGroup({
-    username: new FormControl<string>('', { nonNullable: true, validators: [Validators.required] }),
-    password: new FormControl<string>('', { nonNullable: true, validators: [Validators.required] }),
+    username: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    password: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
   });
 
   submit(): void {
     if (this.form.invalid || this.busy()) return;
 
-    this.error.set(null);
     this.busy.set(true);
+    this.error.set(null);
 
     const { username, password } = this.form.getRawValue();
 
-    this.authService.login({ username, password }).subscribe({
+    this.api.login({ username, password }).subscribe({
       next: (jwt) => {
-        this.authStore.setSession(jwt);
+        this.auth.setSession(jwt.accessToken, jwt.username, jwt.roles ?? []);
         this.busy.set(false);
         this.router.navigateByUrl('/user');
       },
       error: (e) => {
-        const msg = e?.error?.message ?? 'Credenciales inválidas';
-        this.error.set(String(msg));
+        this.error.set(String(e?.error?.message ?? 'Credenciales inválidas'));
         this.busy.set(false);
       },
     });
@@ -473,14 +683,12 @@ export class LoginPageComponent {
 
 ---
 
-### 9) Pantalla \`/user\` (llama al backend \`/api/test/user\`)
-
-```typescript
-// src/app/features/user/user-page.component.ts
+### 11.13 `src/app/features/user/user.page.ts`
+```ts
 import { Component, inject, signal } from '@angular/core';
-import { AuthService } from '../../core/auth.service';
 import { NgIf } from '@angular/common';
-import { AuthStore } from '../../core/auth.store';
+import { AuthService } from '../../core/auth/auth.service';
+import { AuthStore } from '../../core/auth/auth.store';
 
 @Component({
   standalone: true,
@@ -498,7 +706,7 @@ import { AuthStore } from '../../core/auth.store';
     <p *ngIf="error()" style="color:#b00020;">{{ error() }}</p>
   `,
 })
-export class UserPageComponent {
+export class UserPage {
   private readonly api = inject(AuthService);
   readonly auth = inject(AuthStore);
 
@@ -517,8 +725,7 @@ export class UserPageComponent {
         this.busy.set(false);
       },
       error: (e) => {
-        const msg = e?.error?.message ?? 'No autorizado o error de servidor';
-        this.error.set(String(msg));
+        this.error.set(String(e?.error ?? 'No autorizado / error de servidor'));
         this.busy.set(false);
       },
     });
@@ -528,7 +735,24 @@ export class UserPageComponent {
 
 ---
 
-### 10) Notas de rol (compatibilidad)
-El backend bezkoder normalmente devuelve roles como \`["ROLE_USER"]\`. El guard acepta \`USER\` y \`ROLE\_USER\` a la vez para evitar desajustes. Si tu backend devuelve solo \`USER\`, también funciona.
+## 12) Prueba manual (paso a paso)
+
+1. **Backend**: arranca Spring Boot (`mvn spring-boot:run`).
+2. **Frontend**: crea el proyecto `frontend/` (sección 4) y pega los ficheros de la sección 11.
+3. Ejecuta el frontend (`npm start`) y abre `http://localhost:4200`.
+4. Ve a `/register` y crea un usuario.
+5. Ve a `/login`, inicia sesión.
+6. Entra a `/user`:
+   - debe dejarte entrar por guard si tus roles incluyen `ROLE_USER`.
+   - pulsa “Cargar contenido protegido” y debe llamar a `GET /api/test/user`.
 
 ---
+
+## 13) Si te falla el rol (muy común)
+
+Si tras login el backend devuelve roles como `ROLE_USER`, el guard funcionará.
+Si devuelve solo `USER`, también.
+
+Si no te deja entrar:
+- Mira qué te llega en `jwt.roles` cuando haces login.
+- Ajusta `data: { roles: [...] }` en la ruta `/user`.
