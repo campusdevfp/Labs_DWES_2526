@@ -1,9 +1,8 @@
-// src/app/core/auth.service.ts
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { JwtResponse, LoginRequest, SignupRequest } from './auth.models';
 import { Observable } from 'rxjs';
-import { environment } from '../environment/environment';
+import { environment } from '../../environment/environment';
+import { JwtResponse, LoginRequest, SignupRequest } from './auth.models';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
