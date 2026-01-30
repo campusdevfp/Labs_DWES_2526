@@ -1,0 +1,11 @@
+<h1>Lista de Productos</h1>
+<ul>
+  @for (producto of productos(); track producto.id) {
+    <li>
+      <!-- Crea un link dinámico a /product/{id} -->
+      <a [routerLink]="['/product', producto.id]">
+        {{ producto.nombre }} (ID: {{ producto.id }})
+      </a>
+    </li>
+  }
+</ul>

@@ -1,0 +1,10 @@
+<div style="padding: 20px">
+  <a routerLink="/">← Volver a la lista</a>
+
+  @if (productId()) {
+    <h1>Producto ID: {{ productId() }}</h1>
+    <p>Detalles del producto {{ productId() }}</p>
+  } @else {
+    <p>Cargando producto...</p>
+  }
+</div>
