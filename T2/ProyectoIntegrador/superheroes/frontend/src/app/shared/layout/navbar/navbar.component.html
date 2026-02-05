@@ -1,0 +1,18 @@
+﻿<mat-toolbar color="primary">
+  <span>Angular CRUD</span>
+  <span class="spacer"></span>
+
+  @if (isAuthenticated()) {
+    <span style="margin-right: 12px;">
+      {{ loggedInUsername() }}
+    </span>
+
+    <button
+      mat-icon-button
+      (click)="onLogout()"
+      aria-label="Logout"
+    >
+      <mat-icon>logout</mat-icon>
+    </button>
+  }
+</mat-toolbar>
