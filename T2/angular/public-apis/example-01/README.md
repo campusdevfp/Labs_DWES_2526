@@ -1,5 +1,11 @@
 # Sistema de Autenticación JWT con Angular 21
 
+> 📚 **PROYECTO BASE PARA ESTUDIANTES**  
+> Este es un proyecto educativo base para aprender Angular 21 y desarrollo de e-commerce.  
+> **📋 Ver el [ENUNCIADO DEL PROYECTO](PROJECT.md)** para estudiantes con objetivos, fases y criterios de evaluación completos.
+
+---
+
 ## Índice
 
 - [Descripción General](#descripción-general)
