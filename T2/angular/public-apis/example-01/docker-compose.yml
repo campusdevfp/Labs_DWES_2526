@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  # ========================================
+  # Angular Frontend Application
+  # ========================================
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: angular-jwt-frontend
+    ports:
+      - '8080:80'
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+    networks:
+      - app-network
+    labels:
+      - 'com.example.description=Angular 21 JWT Authentication Frontend'
+      - 'com.example.department=Development'
+    healthcheck:
+      test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://localhost/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  app-network:
+    driver: bridge
+
+# ========================================
+# Volumes (opcional para persistencia)
+# ========================================
+volumes:
+  nginx_logs:
+    driver: local
