@@ -1,4 +1,4 @@
-# 🚀 Guía de Comandos Rápidos
+# Guía de Comandos Rápidos
 
 ## Desarrollo Local
 
@@ -187,7 +187,7 @@ git checkout main
 git merge feature/product-catalog
 git push origin main
 
-# 🚀 Deploy automático en Render/Railway/Fly.io
+#  Deploy automático en Render/Railway/Fly.io
 ```
 
 ---

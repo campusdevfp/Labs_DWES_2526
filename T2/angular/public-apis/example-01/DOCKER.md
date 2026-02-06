@@ -1,4 +1,4 @@
-# 🐳 Guía Rápida de Docker
+# Guía Rápida de Docker
 
 ## Comandos Esenciales
 

@@ -1,6 +1,6 @@
-# 📡 Integración con API REST - Platzi Fake Store
+# Integración con API REST - Platzi Fake Store
 
-## 🌐 Información de la API
+## Información de la API
 
 - **Base URL**: `https://api.escuelajs.co/api/v1`
 - **Tipo**: REST API
@@ -11,9 +11,9 @@
 
 ---
 
-## 📚 Endpoints Disponibles
+## Endpoints Disponibles
 
-### 🔐 Autenticación (Implementados ✅)
+### Autenticación (Implementados ✅)
 
 | Método | Endpoint              | Descripción                | Auth | Estado |
 | ------ | --------------------- | -------------------------- | ---- | ------ |
@@ -46,7 +46,7 @@ Authorization: Bearer {access_token}
 
 ---
 
-### 👥 Usuarios
+### Usuarios
 
 | Método | Endpoint              | Descripción                | Auth | Estado |
 | ------ | --------------------- | -------------------------- | ---- | ------ |
@@ -82,7 +82,7 @@ interface User {
 
 ---
 
-### 🛍️ Productos
+### Productos
 
 | Método | Endpoint                | Descripción                 | Auth | Estado |
 | ------ | ----------------------- | --------------------------- | ---- | ------ |
@@ -176,7 +176,7 @@ curl -X DELETE https://api.escuelajs.co/api/v1/products/1 \
 
 ---
 
-### 📂 Categorías
+### Categorías
 
 | Método | Endpoint                   | Descripción                | Auth | Estado |
 | ------ | -------------------------- | -------------------------- | ---- | ------ |
@@ -232,7 +232,7 @@ curl https://api.escuelajs.co/api/v1/categories/1/products
 
 ---
 
-### 📁 Archivos (Upload)
+### Archivos (Upload)
 
 | Método | Endpoint        | Descripción  | Auth | Estado |
 | ------ | --------------- | ------------ | ---- | ------ |
@@ -256,7 +256,7 @@ curl -X POST https://api.escuelajs.co/api/v1/files/upload \
 
 ---
 
-## 🔧 Implementación en Angular
+## Implementación en Angular
 
 ### Service Base Pattern
 
@@ -423,7 +423,7 @@ export class CategoryService extends BaseApiService {
 
 ---
 
-## 🧪 Testing con Postman/Insomnia
+## Testing con Postman/Insomnia
 
 ### Colecciones Pre-configuradas
 
@@ -448,7 +448,7 @@ export class CategoryService extends BaseApiService {
 
 ---
 
-## ⚠️ Limitaciones y Consideraciones
+## Limitaciones y Consideraciones
 
 ### Rate Limiting
 
@@ -463,7 +463,7 @@ export class CategoryService extends BaseApiService {
 
 ### CORS
 
-- ✅ CORS habilitado para todos los orígenes
+- CORS habilitado para todos los orígenes
 - Sin problemas desde navegadores
 
 ### Timeout
@@ -478,7 +478,7 @@ export class CategoryService extends BaseApiService {
 
 ---
 
-## 📖 Recursos Adicionales
+## Recursos Adicionales
 
 - **Documentación Oficial**: https://fakeapi.platzi.com/
 - **Swagger Interactive**: https://fakeapi.platzi.com/en/rest/swagger/
@@ -487,5 +487,3 @@ export class CategoryService extends BaseApiService {
 - **Postman Collection**: https://fakeapi.platzi.com/en/resources/postman/
 
 ---
-
-**Última actualización**: 2026-02-06

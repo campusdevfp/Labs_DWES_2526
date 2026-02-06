@@ -1,13 +1,13 @@
-# 🗺️ Plan de Desarrollo - Frontend E-commerce Completo
+# Plan de Desarrollo - Frontend E-commerce Completo
 
-## 📊 Estado del Proyecto
+## Estado del Proyecto
 
 **Versión Actual**: v1.0 - Autenticación JWT
 **Siguiente**: v2.0 - Catálogo de Productos
 
 ---
 
-## Fase 1: MVP - Catálogo Público 🟢
+## Fase 1: MVP - Catálogo Público
 
 **Duración estimada**: 2-3 días  
 **Prioridad**: Alta
@@ -183,6 +183,7 @@
 ### Guard Adicional
 
 - [ ] `src/app/core/guards/admin.guard.ts`
+
   ```typescript
   export const adminGuard: CanActivateFn = (route, state) => {
     const authService = inject(AuthService);
@@ -423,7 +424,7 @@ git push origin main  # Auto-deploy en Render/Railway/Fly.io
 
 ---
 
-## 📝 Notas Técnicas
+## Notas Técnicas
 
 ### Librerías Recomendadas
 
@@ -446,7 +447,7 @@ git push origin main  # Auto-deploy en Render/Railway/Fly.io
 
 ---
 
-## 🎯 Criterios de Éxito
+## Criterios de Éxito
 
 **MVP (Fase 1)**:
 
